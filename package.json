@@ -1,0 +1,19 @@
+{
+  "name": "activitypub-services",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "moleculer": "^0.13.12",
+    "moleculer-db": "^0.8.4",
+    "moleculer-web": "^0.8.5",
+    "nodemon": "^2.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
