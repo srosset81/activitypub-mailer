@@ -2,7 +2,8 @@
     const { ServiceBroker } = require("moleculer");
     const ApiService = require("moleculer-web");
     const MatchService = require("./MatchService")
-const UsersService = require("./UsersService")
+    const UsersService = require("./UsersService")
+    const FormService = require("./FormService");
 
     const broker = new ServiceBroker();
 
@@ -12,15 +13,23 @@ const UsersService = require("./UsersService")
     mixins: [ApiService],
 
     settings: {
+
         routes: [{
+            bodyParsers: {
+                json: true,
+                urlencoded: { extended: true }
+            },
             aliases: {
                 "POST activitypub": "match.alertuser",
+                "POST form": "form.process",
+                "form": "form.display"
             }
         }]
     }
 });
 
     broker.createService(MatchService);
+    broker.createService(FormService);
 
 
     // Create a DB service for `user` entities

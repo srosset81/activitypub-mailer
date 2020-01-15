@@ -1,4 +1,4 @@
-{
+module.exports = {
     name: "match",
     actions: {
         alertuser(ctx) {
