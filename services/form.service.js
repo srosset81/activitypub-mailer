@@ -9,7 +9,15 @@ const FormService = {
   },
   actions: {
     async display(ctx) {
-      let actor = ctx.params.id && (await ctx.call('activitypub.actor.get', { id: ctx.params.id }));
+      let actor;
+
+      if( ctx.params.id ) {
+        try {
+          actor = await ctx.call('activitypub.actor.get', { id: ctx.params.id });
+        } catch (e) {
+          // Do nothing if actor is not found, the ID will be used for the creation
+        }
+      } 
 
       if (!actor) {
         actor = {

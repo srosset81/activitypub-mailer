@@ -6,6 +6,10 @@ const CONFIG = require('../config');
 const ApiService = {
   mixins: [ApiGateway],
   settings: {
+    cors: {
+      origin: '*',
+      exposedHeaders: '*'
+    },
     assets: {
       folder: './public',
       options: {} // `server-static` module options
