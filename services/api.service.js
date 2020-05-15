@@ -6,6 +6,7 @@ const CONFIG = require('../config');
 const ApiService = {
   mixins: [ApiGateway],
   settings: {
+    port: CONFIG.PORT,
     cors: {
       origin: '*',
       exposedHeaders: '*'

@@ -4,6 +4,7 @@ require('dotenv-flow').config();
 
 module.exports = {
   HOME_URL: process.env.SEMAPPS_HOME_URL,
+  PORT: process.env.SEMAPPS_PORT,
   // Triple store
   SPARQL_ENDPOINT: process.env.SEMAPPS_SPARQL_ENDPOINT,
   MAIN_DATASET: process.env.SEMAPPS_MAIN_DATASET,
@@ -15,6 +16,7 @@ module.exports = {
   SMTP_HOST: process.env.SEMAPPS_SMTP_HOST,
   SMTP_USER: process.env.SEMAPPS_SMTP_USER,
   SMTP_PASS: process.env.SEMAPPS_SMTP_PASS,
-  // MATCH BOT
+  // COLIBRIS.SOCIAL
+  THEMES_CONTAINER: process.env.SEMAPPS_THEMES_CONTAINER,
   FOLLOWING: process.env.SEMAPPS_FOLLOWING
 };

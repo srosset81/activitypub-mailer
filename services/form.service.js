@@ -1,9 +1,12 @@
 const Handlebars = require('handlebars');
+const slugify = require('slugify');
+const urlJoin = require('url-join');
 const fs = require('fs').promises;
+const CONFIG = require('../config');
 
 const FormService = {
   name: 'form',
-  dependencies: ['themes', 'match-bot'],
+  dependencies: ['match-bot'],
   settings: {
     matchBotUri: null
   },
@@ -30,12 +33,21 @@ const FormService = {
         actor.location = { radius: '25000' };
       }
 
-      const themes = await ctx.call('themes.find');
-
       ctx.meta.$responseType = 'text/html';
       return this.formTemplate({
         title: 'Suivez les projets de la Fabrique',
-        themes: themes['ldp:contains'],
+        themes: [
+          'Agriculture & alimentation',
+          'Économie locale',
+          'Démocratie',
+          'Arts & culture',
+          'Éducation',
+          'Habitat & oasis',
+          'Énergie',
+          'Transport',
+          'Bien-être',
+          'Autre'
+        ],
         id: ctx.params.id,
         actor,
         message: ctx.params.message
@@ -60,9 +72,14 @@ const FormService = {
           }
         }
 
+        let themes = [];
+        ctx.params.themes.forEach(themeLabel => {
+          themes.push(this.getThemesUrisFromLabel(themeLabel));
+        })
+
         let actorData = {
           'pair:e-mail': ctx.params.email,
-          'pair:hasInterest': ctx.params.themes,
+          'pair:hasInterest': themes,
           'semapps:mailFrequency': ctx.params.frequency
         };
 
@@ -140,17 +157,18 @@ const FormService = {
 
     const templateFile = await fs.readFile(__dirname + '/../templates/form.html');
 
-    Handlebars.registerHelper('ifInActorThemes', function(elem, returnValue, options) {
+    Handlebars.registerHelper('ifInActorThemes', (elem, returnValue, options) => {
+      const themes = this.getThemesUrisFromLabel(elem);
       if (
         options.data.root.actor &&
         options.data.root.actor['pair:hasInterest'] &&
-        options.data.root.actor['pair:hasInterest'].includes(elem)
+        options.data.root.actor['pair:hasInterest'].some(interest => themes.includes(interest))
       ) {
         return returnValue;
       }
     });
 
-    Handlebars.registerHelper('ifCond', function(v1, operator, v2, options) {
+    Handlebars.registerHelper('ifCond', (v1, operator, v2, options) => {
       if (typeof v2 === 'number') v1 = parseInt(v1, 10);
       switch (operator) {
         case '==':
@@ -179,6 +197,12 @@ const FormService = {
     });
 
     this.formTemplate = Handlebars.compile(templateFile.toString());
+  },
+  methods: {
+    getThemesUrisFromLabel(label) {
+      return label && label.split(/[\s&]+/)
+        .map(themeLabel => urlJoin(CONFIG.THEMES_CONTAINER, slugify(themeLabel, { lower: true })))
+    }
   }
 };
 

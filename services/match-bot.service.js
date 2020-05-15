@@ -1,3 +1,4 @@
+const urlJoin = require('url-join');
 const { BotService, ACTIVITY_TYPES, PUBLIC_URI } = require('@semapps/activitypub');
 const CONFIG = require('../config');
 
@@ -8,18 +9,25 @@ const MatchBotService = {
     actor: {
       username: 'match-bot',
       name: 'Match Bot'
-    },
-    following: CONFIG.FOLLOWING
+    }
+  },
+  actions: {
+    async followActor(ctx) {
+      await ctx.call('activitypub.outbox.post', {
+        username: this.settings.actor.username,
+        '@context': 'https://www.w3.org/ns/activitystreams',
+        actor: this.settings.actor.uri,
+        type: ACTIVITY_TYPES.FOLLOW,
+        object: CONFIG.FOLLOWING,
+        to: [ CONFIG.FOLLOWING, urlJoin(this.settings.actor.uri, 'followers') ]
+      });
+
+      console.log('Match bot now follows actor', CONFIG.FOLLOWING)
+    }
   },
   methods: {
     actorCreated(actor) {
-      // this.broker.call('activitypub.outbox.post', {
-      //   collectionUri: this.settings.actor.uri + '/outbox',
-      //   '@context': 'https://www.w3.org/ns/activitystreams',
-      //   actor: this.settings.actor.uri,
-      //   type: ACTIVITY_TYPES.FOLLOW,
-      //   object: this.settings.actor.following
-      // });
+      this.actions.followActor();
     },
     async inboxReceived(activity) {
       if (activity.type === ACTIVITY_TYPES.CREATE) {
