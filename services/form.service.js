@@ -17,7 +17,7 @@ const FormService = {
         } catch (e) {
           // Do nothing if actor is not found, the ID will be used for the creation
         }
-      } 
+      }
 
       if (!actor) {
         actor = {
@@ -50,8 +50,15 @@ const FormService = {
         ctx.meta.$statusCode = 302;
         ctx.meta.$location = `/?message=deleted`;
       } else {
-        // Check if an actor already exist with this ID
-        let actor = ctx.params.id ? await ctx.call('activitypub.actor.get', { id: ctx.params.id }) : null;
+        let actor;
+
+        if( ctx.params.id ) {
+          try {
+            actor = await ctx.call('activitypub.actor.get', { id: ctx.params.id });
+          } catch (e) {
+            // Do nothing if actor is not found, the ID will be used for the creation
+          }
+        }
 
         let actorData = {
           'pair:e-mail': ctx.params.email,
