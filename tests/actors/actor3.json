@@ -9,7 +9,8 @@
   "type": "Person",
   "pair:e-mail": "loic@test.com",
   "pair:hasInterest": [
-    "http://localhost:3000/themes/democratie"
+    "http://localhost:3000/themes/education",
+    "http://localhost:3000/themes/arts"
   ],
   "semapps:mailFrequency": "daily"
 }

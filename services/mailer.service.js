@@ -6,7 +6,7 @@ const CONFIG = require('../config');
 
 const MailerService = {
   name: 'mailer',
-  dependencies: ['match-bot', 'activitypub.actor', 'mail-queue'],
+  dependencies: ['match-bot', 'activitypub.actor', 'mail-queue', 'external-resource'],
   settings: {
     baseUri: CONFIG.HOME_URL,
     fromEmail: CONFIG.FROM_EMAIL,
@@ -83,14 +83,11 @@ const MailerService = {
       const { mail } = ctx.params;
 
       const actor = await this.broker.call('activitypub.actor.get', { id: mail['actor'] });
-
-      let themes = await ctx.call('themes.get', { id: actor['pair:hasInterest'] });
-      if (!Array.isArray(themes)) themes = [themes];
-
-      // TODO fetch objects from ID
+      const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasInterest'] });
+      const projects = await this.broker.call('external-resource.getMany', { ids: mail.objects });
 
       const html = this.notificationMailTemplate({
-        projects: mail.objects,
+        projects: projects,
         locationParam: actor.location ? `A ${actor.location.radius / 1000} km de chez vous` : 'Dans le monde entier',
         themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
         preferencesUrl: this.settings.baseUri + '?id=' + actor.id,
@@ -107,9 +104,7 @@ const MailerService = {
     },
     async sendConfirmationMail(ctx) {
       const { actor } = ctx.params;
-
-      let themes = await ctx.call('themes.get', { id: actor['pair:hasInterest'] });
-      if (!Array.isArray(themes)) themes = [themes];
+      const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasInterest'] });
 
       const html = this.confirmationMailTemplate({
         locationParam: actor.location ? `A ${actor.location.radius / 1000} km de chez vous` : 'Dans le monde entier',

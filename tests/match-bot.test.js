@@ -31,6 +31,7 @@ afterAll(async () => {
 
 describe('Test match-bot service', () => {
   let actors = [];
+  const matchBotUri = "http://localhost:4000/actors/match-bot";
 
   test('Create 3 actors and make them follow the match bot', async () => {
     actors[1] = await broker.call('activitypub.actor.create', require('./actors/actor1.json'));
@@ -43,7 +44,8 @@ describe('Test match-bot service', () => {
         '@context': 'https://www.w3.org/ns/activitystreams',
         actor: actors[i].id,
         type: 'Follow',
-        object: 'http://localhost:3000/actors/match-bot'
+        object: matchBotUri,
+        to: [actors[i].followers, matchBotUri]
       });
 
       const followEvent = await broker.watchForEvent('activitypub.follow.added');
@@ -62,18 +64,18 @@ describe('Test match-bot service', () => {
 
     // Actor 3 should match with this project
     const outbox = await broker.call('activitypub.inbox.list', {
-      collectionUri: 'http://localhost:3000/actors/match-bot/outbox'
+      collectionUri: matchBotUri + '/outbox'
     });
 
     expect(outbox.orderedItems).not.toBeNull();
     expect(outbox.orderedItems[0]).toMatchObject({
       type: 'Announce',
-      actor: 'http://localhost:3000/actors/match-bot',
+      actor: matchBotUri,
       object: {
         type: 'Create',
         object: {
           type: 'pair:Project',
-          id: 'https://colibris.social/objects/douce-france-le-film'
+          id: 'http://localhost:3000/objects/mongrenier'
         }
       },
       to: [actors[3].id, 'as:Public']
@@ -90,18 +92,18 @@ describe('Test match-bot service', () => {
 
     // Actors 1 and 3 should match
     const outbox = await broker.call('activitypub.inbox.list', {
-      collectionUri: 'http://localhost:3000/actors/match-bot/outbox'
+      collectionUri: matchBotUri + '/outbox'
     });
 
     expect(outbox.orderedItems).not.toBeNull();
     expect(outbox.orderedItems[0]).toMatchObject({
       type: 'Announce',
-      actor: 'http://localhost:3000/actors/match-bot',
+      actor: matchBotUri,
       object: {
         type: 'Create',
         object: {
           type: 'pair:Project',
-          id: 'https://colibris.social/objects/chantilly-en-transition'
+          id: 'http://localhost:3000/objects/chateau-darvieu'
         }
       },
       to: [actors[1].id, actors[3].id, 'as:Public']
@@ -116,15 +118,15 @@ describe('Test match-bot service', () => {
       '@type': 'Mail',
       actor: actors[1].id,
       frequency: 'weekly',
-      objects: 'https://colibris.social/objects/chantilly-en-transition'
+      objects: 'http://localhost:3000/objects/chateau-darvieu'
     });
     expect(collection['ldp:contains'][1]).toMatchObject({
       '@type': 'Mail',
       actor: actors[3].id,
       frequency: 'daily',
       objects: [
-        'https://colibris.social/objects/chantilly-en-transition',
-        'https://colibris.social/objects/douce-france-le-film'
+        'http://localhost:3000/objects/chateau-darvieu',
+        'http://localhost:3000/objects/mongrenier'
       ]
     });
   });

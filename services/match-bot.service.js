@@ -27,7 +27,9 @@ const MatchBotService = {
   },
   methods: {
     actorCreated(actor) {
-      this.actions.followActor();
+      if( CONFIG.FOLLOWING ) {
+        this.actions.followActor();
+      }
     },
     async inboxReceived(activity) {
       if (activity.type === ACTIVITY_TYPES.CREATE) {

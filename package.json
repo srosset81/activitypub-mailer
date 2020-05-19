@@ -14,6 +14,7 @@
     "@semapps/activitypub": "^0.1.5",
     "@semapps/ldp": "^0.1.5",
     "@semapps/triplestore": "^0.1.5",
+    "@semapps/mime-types": "^0.1.5",
     "dotenv-flow": "^3.1.0",
     "handlebars": "^4.7.2",
     "moleculer": "^0.14.4",

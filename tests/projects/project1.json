@@ -2,31 +2,42 @@
   "@context": [
     "https://www.w3.org/ns/activitystreams",
     {
-      "pair": "http://virtual-assembly.org/ontologies/pair#"
+      "as": "https://www.w3.org/ns/activitystreams#",
+      "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+      "ldp": "http://www.w3.org/ns/ldp#",
+      "pair": "http://virtual-assembly.org/ontologies/pair#",
+      "semapps": "http://semapps.org/ns/core#"
     }
   ],
+  "id": "http://localhost:3000/activities/5ebea90ac08492f20bf53cf7",
   "type": "Create",
-  "id": "https://colibris.social/activities/51sdsdc5",
-  "to": [ "http://localhost:3000/actors/match-bot" ],
+  "actor": "http://localhost:3000/actors/lafabrique",
   "object": {
-    "id": "https://colibris.social/objects/douce-france-le-film",
+    "id": "http://localhost:3000/objects/mongrenier",
     "type": "pair:Project",
-    "pair:label": "Douce France, le film !",
-    "pair:description": "Un film documentaire pour le cinéma qui sera diffusé dans toutes les régions lors d'une grande tournée de ciné-débats : un film pour bousculer les idées reçues, débattre et inspirer !",
+    "pair:aboutPage": "https://www.colibris-lafabrique.org/les-projets/mongrenier",
+    "pair:description": "A la recherche de nouveaux habitants, pour nous aider à façonner joyeusement notre nouvel espace de vie !",
     "pair:interestOf": [
-      "http://localhost:3000/themes/democratie",
-      "http://localhost:3000/themes/habitat-and-oasis"
+      "http://localhost:3000/themes/oasis",
+      "http://localhost:3000/themes/habitat",
+      "http://localhost:3000/themes/culture",
+      "http://localhost:3000/themes/arts"
     ],
-    "pair:aboutPage": "https://www.colibris-lafabrique.org/les-projets/douce-france-le-film",
-    "location": {
-      "type": "Place",
-      "name": "Grenoble",
-      "latitude": 45.1869,
-      "longitude": 5.72628
+    "pair:involves": {
+      "id": "http://localhost:3000/actors/lafabrique"
     },
+    "pair:label": "Mongrenier",
     "image": {
       "type": "Image",
-      "url": "https://www.colibris-lafabrique.org/sites/default/files/styles/projet_large/public/projets/affiche_et_toi_tu_veux_quoi_sur_ton_territoire_.png?itok=ccgII27H"
+      "url": "https://www.colibris-lafabrique.org/sites/default/files/styles/projet_large/public/projets/img_5711_1.jpg"
+    },
+    "location": {
+      "type": "Place",
+      "latitude": "43.141212",
+      "longitude": "2.184907",
+      "name": "Villarzel du razes"
     }
-  }
+  },
+  "published": "2020-05-15T14:36:58.974Z",
+  "to": "http://localhost:3000/actors/lafabrique/followers"
 }

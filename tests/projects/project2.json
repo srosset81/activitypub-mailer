@@ -2,31 +2,41 @@
   "@context": [
     "https://www.w3.org/ns/activitystreams",
     {
-      "pair": "http://virtual-assembly.org/ontologies/pair#"
+      "as": "https://www.w3.org/ns/activitystreams#",
+      "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+      "ldp": "http://www.w3.org/ns/ldp#",
+      "pair": "http://virtual-assembly.org/ontologies/pair#",
+      "semapps": "http://semapps.org/ns/core#"
     }
   ],
+  "id": "http://localhost:3000/activities/5ebea9a5c08492f20bf53d0f",
   "type": "Create",
-  "id": "https://colibris.social/activities/87sdcs7",
-  "to": [ "http://localhost:3000/actors/match-bot" ],
+  "actor": "http://localhost:3000/actors/lafabrique",
   "object": {
-    "id": "https://colibris.social/objects/chantilly-en-transition",
+    "id": "http://localhost:3000/objects/chateau-darvieu",
     "type": "pair:Project",
-    "pair:label": "Chantilly en Transition",
-    "pair:description": "Dynamisons la ville de Chantilly, pour qu'elle devienne un phare de l'écologie !",
+    "pair:aboutPage": "https://www.colibris-lafabrique.org/les-projets/chateau-darvieu",
+    "pair:description": "Château d'Arvieu, laboratoire rural de la transition écologique et sociale",
     "pair:interestOf": [
-      "http://localhost:3000/themes/democratie",
-      "http://localhost:3000/themes/ecologie"
+      "http://localhost:3000/themes/habitat",
+      "http://localhost:3000/themes/oasis",
+      "http://localhost:3000/themes/education"
     ],
-    "pair:aboutPage": "https://www.colibris-lafabrique.org/les-projets/chantilly-en-transition",
-    "location": {
-      "type": "Place",
-      "name": "Chantilly",
-      "latitude": 49.1869,
-      "longitude": 2.4608
+    "pair:involves": {
+      "id": "http://localhost:3000/actors/lafabrique"
     },
+    "pair:label": "Château d'Arvieu",
     "image": {
       "type": "Image",
-      "url": "https://www.colibris-lafabrique.org/sites/default/files/styles/projet_large/public/projets/affiche_et_toi_tu_veux_quoi_sur_ton_territoire_.png?itok=ccgII27H"
+      "url": "https://www.colibris-lafabrique.org/sites/default/files/styles/projet_large/public/projets/chateau_arvieu.jpg"
+    },
+    "location": {
+      "type": "Place",
+      "latitude": "44.190063",
+      "longitude": "2.6605852",
+      "name": "ARVIEU"
     }
-  }
+  },
+  "published": "2020-05-15T14:39:33.397Z",
+  "to": "http://localhost:3000/actors/lafabrique/followers"
 }
