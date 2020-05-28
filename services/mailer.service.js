@@ -86,8 +86,6 @@ const MailerService = {
       const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasInterest'] });
       const projects = await this.broker.call('external-resource.getMany', { ids: mail.objects });
 
-      console.log('actor', actor);
-
       const html = this.notificationMailTemplate({
         projects: projects,
         locationParam: actor.location ? `A ${actor.location.radius / 1000} km de chez vous` : 'Dans le monde entier',
