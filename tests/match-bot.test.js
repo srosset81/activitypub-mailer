@@ -5,7 +5,7 @@ const EventsWatcher = require('../../../tests/middleware/EventsWatcher');
 const path = require('path');
 const CONFIG = require('../config');
 
-jest.setTimeout(60000);
+jest.setTimeout(30000);
 
 const broker = new ServiceBroker({
   middlewares: [EventsWatcher],

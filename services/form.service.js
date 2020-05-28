@@ -2,6 +2,7 @@ const Handlebars = require('handlebars');
 const slugify = require('slugify');
 const urlJoin = require('url-join');
 const fs = require('fs').promises;
+const { ACTIVITY_TYPES, PUBLIC_URI } = require('@semapps/activitypub');
 const CONFIG = require('../config');
 
 const FormService = {
@@ -129,8 +130,9 @@ const FormService = {
             collectionUri: actor.outbox,
             '@context': 'https://www.w3.org/ns/activitystreams',
             actor: actor.id,
-            type: 'Follow',
-            object: this.settings.matchBotUri
+            type: ACTIVITY_TYPES.FOLLOW,
+            object: this.settings.matchBotUri,
+            to: [ this.settings.matchBotUri, urlJoin(actor.id, 'followers'), PUBLIC_URI ]
           });
 
           // Do not wait for mail to be sent
@@ -138,14 +140,6 @@ const FormService = {
 
           message = 'created';
         }
-
-        // TODO make sure we don't overwrite other users interests
-        // for( let themeUri of ctx.params.theme ) {
-        //   await ctx.call('theme.update', {
-        //     '@id': themeUri,
-        //     'pair:interestOf': actor['@id']
-        //   });
-        // }
 
         ctx.meta.$statusCode = 302;
         ctx.meta.$location = `/?id=${encodeURI(actor.id)}&message=${message}`;
