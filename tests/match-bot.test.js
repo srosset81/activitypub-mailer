@@ -31,7 +31,7 @@ afterAll(async () => {
 
 describe('Test match-bot service', () => {
   let actors = [];
-  const matchBotUri = "http://localhost:4000/actors/match-bot";
+  const matchBotUri = 'http://localhost:4000/actors/match-bot';
 
   test('Create 3 actors and make them follow the match bot', async () => {
     actors[1] = await broker.call('activitypub.actor.create', require('./actors/actor1.json'));
@@ -124,10 +124,7 @@ describe('Test match-bot service', () => {
       '@type': 'Mail',
       actor: actors[3].id,
       frequency: 'daily',
-      objects: [
-        'http://localhost:3000/objects/chateau-darvieu',
-        'http://localhost:3000/objects/mongrenier'
-      ]
+      objects: ['http://localhost:3000/objects/chateau-darvieu', 'http://localhost:3000/objects/mongrenier']
     });
   });
 

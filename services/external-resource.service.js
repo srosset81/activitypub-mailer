@@ -7,7 +7,7 @@ module.exports = {
       cache: true,
       async handler(ctx) {
         const { id } = ctx.params;
-        const response = await fetch(id, { headers: { Accept: MIME_TYPES.JSON }});
+        const response = await fetch(id, { headers: { Accept: MIME_TYPES.JSON } });
         if (response.ok) {
           return await response.json();
         } else {
@@ -21,9 +21,9 @@ module.exports = {
         let { ids } = ctx.params;
         let resources = [];
         ids = Array.isArray(ids) ? ids : [ids];
-        for(let id of ids) {
+        for (let id of ids) {
           const resource = await this.actions.getOne({ id });
-          if( resource ) resources.push(resource);
+          if (resource) resources.push(resource);
         }
         return resources;
       }

@@ -15,7 +15,7 @@ const FormService = {
     async display(ctx) {
       let actor;
 
-      if( ctx.params.id ) {
+      if (ctx.params.id) {
         try {
           actor = await ctx.call('activitypub.actor.get', { id: ctx.params.id });
         } catch (e) {
@@ -65,7 +65,7 @@ const FormService = {
       } else {
         let actor;
 
-        if( ctx.params.id ) {
+        if (ctx.params.id) {
           try {
             actor = await ctx.call('activitypub.actor.get', { id: ctx.params.id });
           } catch (e) {
@@ -76,7 +76,7 @@ const FormService = {
         let themes = [];
         ctx.params.themes.forEach(themeLabel => {
           themes.push(this.getThemesUrisFromLabel(themeLabel));
-        })
+        });
 
         let actorData = {
           'pair:e-mail': ctx.params.email,
@@ -132,7 +132,7 @@ const FormService = {
             actor: actor.id,
             type: ACTIVITY_TYPES.FOLLOW,
             object: this.settings.matchBotUri,
-            to: [ this.settings.matchBotUri, urlJoin(actor.id, 'followers'), PUBLIC_URI ]
+            to: [this.settings.matchBotUri, urlJoin(actor.id, 'followers'), PUBLIC_URI]
           });
 
           // Do not wait for mail to be sent
@@ -194,8 +194,10 @@ const FormService = {
   },
   methods: {
     getThemesUrisFromLabel(label) {
-      return label && label.split(/[\s&]+/)
-        .map(themeLabel => urlJoin(CONFIG.THEMES_CONTAINER, slugify(themeLabel, { lower: true })))
+      return (
+        label &&
+        label.split(/[\s&]+/).map(themeLabel => urlJoin(CONFIG.THEMES_CONTAINER, slugify(themeLabel, { lower: true })))
+      );
     }
   }
 };

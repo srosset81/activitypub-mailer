@@ -128,8 +128,7 @@ const MailerService = {
       if (
         activity.actor === this.settings.matchBotUri &&
         activity.type === ACTIVITY_TYPES.ANNOUNCE &&
-        ( activity.object.type === ACTIVITY_TYPES.CREATE ||
-        activity.object.type === ACTIVITY_TYPES.UPDATE )
+        (activity.object.type === ACTIVITY_TYPES.CREATE || activity.object.type === ACTIVITY_TYPES.UPDATE)
       ) {
         for (let actorUri of recipients) {
           const actor = await this.broker.call('activitypub.actor.get', { id: actorUri });

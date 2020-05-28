@@ -19,20 +19,20 @@ const MatchBotService = {
         actor: this.settings.actor.uri,
         type: ACTIVITY_TYPES.FOLLOW,
         object: CONFIG.FOLLOWING,
-        to: [ CONFIG.FOLLOWING, urlJoin(this.settings.actor.uri, 'followers') ]
+        to: [CONFIG.FOLLOWING, urlJoin(this.settings.actor.uri, 'followers')]
       });
 
-      console.log('Match bot now follows actor', CONFIG.FOLLOWING)
+      console.log('Match bot now follows actor', CONFIG.FOLLOWING);
     }
   },
   methods: {
     actorCreated(actor) {
-      if( CONFIG.FOLLOWING ) {
+      if (CONFIG.FOLLOWING) {
         this.actions.followActor();
       }
     },
     async inboxReceived(activity) {
-      if ( activity.type === ACTIVITY_TYPES.CREATE || activity.type === ACTIVITY_TYPES.UPDATE ) {
+      if (activity.type === ACTIVITY_TYPES.CREATE || activity.type === ACTIVITY_TYPES.UPDATE) {
         const matchingFollowers = await this.getMatchingFollowers(activity);
 
         await this.broker.call('activitypub.outbox.post', {
