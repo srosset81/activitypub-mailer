@@ -110,62 +110,53 @@ describe('Test match-bot service', () => {
     });
   });
 
-  test('Make sure mails are queued', async () => {
-    const collection = await broker.call('mail-queue.find');
-
-    expect(collection['ldp:contains']).not.toBeNull();
-    expect(collection['ldp:contains'][0]).toMatchObject({
-      '@type': 'Mail',
-      actor: actors[1].id,
-      frequency: 'weekly',
-      objects: 'http://localhost:3000/objects/chateau-darvieu'
-    });
-    expect(collection['ldp:contains'][1]).toMatchObject({
-      '@type': 'Mail',
-      actor: actors[3].id,
-      frequency: 'daily',
-      objects: ['http://localhost:3000/objects/chateau-darvieu', 'http://localhost:3000/objects/mongrenier']
-    });
-  });
-
   test('Process queue with daily frequency', async () => {
-    let results = await broker.call('mailer.processQueue', {
-      frequency: 'daily'
+    const job = await broker.call('mailer.processNotifications', { frequency: 'daily' });
+
+    const result = await job.finished();
+
+    expect(result).toMatchObject({
+      [actors[3].id]: [
+        'http://localhost:3000/objects/mongrenier',
+        'http://localhost:3000/objects/chateau-darvieu'
+      ]
     });
-
-    expect(results.length).toBe(1);
-    expect(results[0]).toMatchObject({
-      accepted: ['loic@test.com'],
-      rejected: []
-    });
-
-    for (let info of results) {
-      const previewUrl = mailer.getTestMessageUrl(info);
-      console.log('PREVIEW URL', previewUrl);
-    }
-
-    // Now queue is empty, we should not have any result here
-    results = await broker.call('mailer.processQueue', {
-      frequency: 'daily'
-    });
-
-    expect(results.length).toBe(0);
   });
 
   test('Process queue with weekly frequency', async () => {
-    let results = await broker.call('mailer.processQueue', {
-      frequency: 'weekly'
-    });
+    const job = await broker.call('mailer.processNotifications', { frequency: 'weekly' });
 
-    expect(results.length).toBe(1);
-    expect(results[0]).toMatchObject({
-      accepted: ['sebastien@test.com'],
-      rejected: []
-    });
+    const result = await job.finished();
 
-    for (let info of results) {
-      const previewUrl = mailer.getTestMessageUrl(info);
-      console.log('PREVIEW URL', previewUrl);
-    }
+    expect(result).toMatchObject({
+      [actors[1].id]: [
+        'http://localhost:3000/objects/chateau-darvieu'
+      ]
+    });
+  });
+
+  test('Send confirmation mail', async () => {
+    const job = await broker.call('mailer.sendConfirmationMail', { actor: actors[1] });
+
+    const result = await job.finished();
+
+    const previewUrl = mailer.getTestMessageUrl(result);
+    console.log('CONFIRMATION MAIL PREVIEW', previewUrl);
+
+    expect(result.accepted[0]).toBe('sebastien@test.com');
+  });
+
+  test('Send notification mail', async () => {
+    const job = await broker.call('mailer.sendNotificationMail', { actorUri: actors[3].id, objects: [
+      'http://localhost:3000/objects/mongrenier',
+      'http://localhost:3000/objects/chateau-darvieu'
+    ]});
+
+    const result = await job.finished();
+
+    const previewUrl = mailer.getTestMessageUrl(result);
+    console.log('NOTIFICATION MAIL PREVIEW', previewUrl);
+
+    expect(result.accepted[0]).toBe('loic@test.com');
   });
 });

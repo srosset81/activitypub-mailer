@@ -50,11 +50,14 @@ const MailerService = {
   },
   actions: {
     sendConfirmationMail(ctx) {
-      this.createJob('sendMail', 'confirmation', { actor: ctx.params.actor });
+      return this.createJob('sendMail', 'confirmation', { actor: ctx.params.actor });
+    },
+    sendNotificationMail(ctx) {
+      return this.createJob('sendMail', 'notification', { actorUri: ctx.params.actorUri, objects: ctx.params.objects });
     },
     processNotifications(ctx) {
-      this.createJob('buildNotificationMails', ctx.params.frequency);
-      return('Envoi des emails en cours...');
+      return this.createJob('buildNotificationMails', ctx.params.frequency);
+      // return('Envoi des emails en cours...');
     }
   },
   events: {
