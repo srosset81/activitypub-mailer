@@ -1,12 +1,14 @@
 const mailer = require('nodemailer');
 const Handlebars = require('handlebars');
 const fs = require('fs').promises;
+const QueueService = require('moleculer-bull');
 const { ACTIVITY_TYPES } = require('@semapps/activitypub');
 const CONFIG = require('../config');
 
 const MailerService = {
   name: 'mailer',
-  dependencies: ['match-bot', 'activitypub.actor', 'mail-queue', 'external-resource'],
+  dependencies: ['match-bot', 'activitypub.actor', 'external-resource'],
+  mixins: [QueueService(CONFIG.QUEUE_SERVICE_URL)],
   settings: {
     baseUri: CONFIG.HOME_URL,
     fromEmail: CONFIG.FROM_EMAIL,
@@ -41,86 +43,18 @@ const MailerService = {
 
     const notificationMailFile = await fs.readFile(__dirname + '/../templates/notification-mail.html');
     this.notificationMailTemplate = Handlebars.compile(notificationMailFile.toString());
+
+    this.createJob('buildNotificationMails', 'daily',{}, { repeat: { cron: '0 0 17 * * *' }});
+    this.createJob('buildNotificationMails', 'weekly', {}, { repeat: { cron: '0 30 16 * * 4' }});
+    this.getQueue('notifyActor').pause();
   },
   actions: {
-    async processQueue(ctx) {
-      const { frequency } = ctx.params;
-      let returnInfo = [];
-
-      const container = await this.broker.call('mail-queue.find', {
-        query: {
-          'http://semapps.org/ns/core#frequency': frequency,
-          'http://semapps.org/ns/core#sentAt': null,
-          'http://semapps.org/ns/core#errorResponse': null
-        }
-      });
-
-      if (container['ldp:contains'] && container['ldp:contains'].length > 0) {
-        for (let mail of container['ldp:contains']) {
-          const info = await this.actions.sendNotificationMail({ mail });
-
-          if (info.accepted.length > 0) {
-            // Mark mail as sent
-            await this.broker.call('mail-queue.update', {
-              '@id': mail['@id'],
-              sentAt: new Date().toISOString()
-            });
-          } else {
-            // Mark mail as error
-            await this.broker.call('mail-queue.update', {
-              '@id': mail['@id'],
-              errorResponse: info.response
-            });
-          }
-
-          returnInfo.push(info);
-        }
-      }
-
-      return returnInfo;
+    sendConfirmationMail(ctx) {
+      this.createJob('sendMail', 'confirmation', { actor: ctx.params.actor });
     },
-    async sendNotificationMail(ctx) {
-      const { mail } = ctx.params;
-
-      const actor = await this.broker.call('activitypub.actor.get', { id: mail['actor'] });
-      const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasInterest'] });
-      const projects = await this.broker.call('external-resource.getMany', { ids: mail.objects });
-
-      const html = this.notificationMailTemplate({
-        projects: projects,
-        locationParam: actor.location ? `A ${actor.location.radius / 1000} km de chez vous` : 'Dans le monde entier',
-        themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
-        preferencesUrl: this.settings.baseUri + '?id=' + actor.id,
-        email: actor['pair:e-mail']
-      });
-
-      return await this.transporter.sendMail({
-        from: `"${this.settings.fromName}" <${this.settings.fromEmail}>`,
-        to: actor['pair:e-mail'],
-        subject: 'Nouveaux projets sur la Fabrique',
-        // text: "Hello world",
-        html
-      });
-    },
-    async sendConfirmationMail(ctx) {
-      const { actor } = ctx.params;
-      const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasInterest'] });
-
-      const html = this.confirmationMailTemplate({
-        locationParam: actor.location ? `A ${actor.location.radius / 1000} km de chez vous` : 'Dans le monde entier',
-        themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
-        frequency: actor['semapps:mailFrequency'] === 'daily' ? 'une fois par jour' : 'une fois par semaine',
-        preferencesUrl: this.settings.baseUri + '?id=' + actor.id,
-        email: actor['pair:e-mail']
-      });
-
-      return await this.transporter.sendMail({
-        from: `"${this.settings.fromName}" <${this.settings.fromEmail}>`,
-        to: actor['pair:e-mail'],
-        subject: 'Notification des nouveaux projets sur la Fabrique',
-        // text: "Hello world",
-        html
-      });
+    processNotifications(ctx) {
+      this.createJob('buildNotificationMails', ctx.params.frequency);
+      return('Envoi des emails en cours...');
     }
   },
   events: {
@@ -132,7 +66,19 @@ const MailerService = {
       ) {
         for (let actorUri of recipients) {
           const actor = await this.broker.call('activitypub.actor.get', { id: actorUri });
-          await this.queueObject(actor, { '@context': activity['@context'], ...activity.object.object });
+          await this.createJob(
+            'notifyActor',
+            actor['semapps:mailFrequency'],
+            {
+              actorUri,
+              actorEmail: actor['pair:e-mail'],
+              objectUri: activity.object.object.id
+            },
+            {
+              // Add a one-month delay. The job will be treated by the buildNotificationMails job
+              delay: 2629800000
+            }
+          );
         }
         this.broker.emit('mailer.objects.queued');
       }
@@ -141,38 +87,124 @@ const MailerService = {
       // Do nothing
     }
   },
-  methods: {
-    async queueObject(actor, object) {
-      // Find if there is a mail in queue for the actor
-      const mails = await this.broker.call('mail-queue.find', {
-        query: {
-          'http://semapps.org/ns/core#actor': actor.id,
-          'http://semapps.org/ns/core#sentAt': null,
-          'http://semapps.org/ns/core#errorResponse': null
-        }
-      });
-
-      if (mails['ldp:contains'] && mails['ldp:contains'].length > 0) {
-        const mail = mails['ldp:contains'][0];
-        const objects = Array.isArray(mail.objects) ? mail.objects : [mail.objects];
-
-        // Add the object to the existing mail
-        await this.broker.call('mail-queue.update', {
-          '@id': mail['@id'],
-          objects: [...new Set([object.id, ...objects])]
-        });
-      } else {
-        // Create a new mail for the actor
-        await this.broker.call('mail-queue.create', {
-          '@type': 'Mail',
-          actor: actor.id,
-          objects: object.id,
-          frequency: actor['semapps:mailFrequency'],
-          sentAt: null,
-          errorResponse: null
-        });
+  queues: {
+    notifyActor: {
+      name: '*',
+      process() {
+        // This should be called after mails are built through the buildNotificationMails job
+        return true;
       }
-    }
+    },
+    buildNotificationMails: {
+      name: '*',
+      async process(job) {
+        // Gather all notifications
+        const mails = {};
+        const subJobs = await this.getQueue('notifyActor').getDelayed();
+        for( let subJob of subJobs ) {
+          if( job.name === subJob.name ) {
+            if (mails[subJob.data.actorUri]) {
+              mails[subJob.data.actorUri].push(subJob.data.objectUri)
+            } else {
+              mails[subJob.data.actorUri] = [subJob.data.objectUri]
+            }
+            // Promote job so that it passes to completed state
+            subJob.promote();
+          }
+        }
+
+        job.progress(50);
+
+        Object.keys(mails).forEach(actorUri => {
+          job.log(`Sending notification email to ${actorUri}...`);
+          this.createJob('sendMail', 'notification', {
+            actorUri,
+            objects: mails[actorUri]
+          });
+        });
+
+        job.progress(100);
+
+        return mails;
+      }
+    },
+    sendMail: [
+      {
+        name: 'confirmation',
+        async process(job) {
+          const { actor } = job.data;
+          const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasInterest'] });
+
+          job.progress(10);
+
+          const html = this.confirmationMailTemplate({
+            locationParam: actor.location ? `A ${actor.location.radius / 1000} km de chez vous` : 'Dans le monde entier',
+            themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
+            frequency: actor['semapps:mailFrequency'] === 'daily' ? 'une fois par jour' : 'une fois par semaine',
+            preferencesUrl: this.settings.baseUri + '?id=' + actor.id,
+            email: actor['pair:e-mail']
+          });
+
+          job.log(html);
+          job.progress(50);
+
+          const result = await this.transporter.sendMail({
+            from: `"${this.settings.fromName}" <${this.settings.fromEmail}>`,
+            to: actor['pair:e-mail'],
+            subject: 'Notification des nouveaux projets sur la Fabrique',
+            // text: "Hello world",
+            html
+          });
+
+          job.progress(100);
+
+          if (result.accepted.length > 0) {
+            return result;
+          } else {
+            throw new Error(result.response);
+          }
+        }
+      },
+      {
+        name: 'notification',
+        async process(job) {
+          const { actorUri, objects } = job.data;
+
+          const actor = await this.broker.call('activitypub.actor.get', { id: actorUri });
+          const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasInterest'] });
+          const projects = await this.broker.call('external-resource.getMany', { ids: objects });
+
+          job.progress(10);
+
+          const html = this.notificationMailTemplate({
+            projects: projects,
+            locationParam: actor.location ? `A ${actor.location.radius / 1000} km de chez vous` : 'Dans le monde entier',
+            themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
+            preferencesUrl: this.settings.baseUri + '?id=' + actor.id,
+            email: actor['pair:e-mail']
+          });
+
+          job.log(html);
+          job.progress(50);
+
+          const result = await this.transporter.sendMail({
+            from: `"${this.settings.fromName}" <${this.settings.fromEmail}>`,
+            to: actor['pair:e-mail'],
+            subject: 'Nouveaux projets sur la Fabrique',
+            // text: "Hello world",
+            html
+          });
+
+          job.progress(100);
+
+          if (result.accepted.length > 0) {
+            return result;
+          } else {
+            throw new Error(result.response);
+          }
+        }
+      }
+    ]
   }
 };
 
