@@ -44,8 +44,8 @@ const MailerService = {
     const notificationMailFile = await fs.readFile(__dirname + '/../templates/notification-mail.html');
     this.notificationMailTemplate = Handlebars.compile(notificationMailFile.toString());
 
-    this.createJob('buildNotificationMails', 'daily',{}, { repeat: { cron: '0 0 17 * * *' }});
-    this.createJob('buildNotificationMails', 'weekly', {}, { repeat: { cron: '0 30 16 * * 4' }});
+    this.createJob('buildNotificationMails', 'daily', {}, { repeat: { cron: '0 0 17 * * *' } });
+    this.createJob('buildNotificationMails', 'weekly', {}, { repeat: { cron: '0 30 16 * * 4' } });
     this.getQueue('notifyActor').pause();
   },
   actions: {
@@ -104,12 +104,15 @@ const MailerService = {
         // Gather all notifications
         const mails = {};
         const subJobs = await this.getQueue('notifyActor').getDelayed();
-        for( let subJob of subJobs ) {
-          if( job.name === subJob.name ) {
+        for (let subJob of subJobs) {
+          if (job.name === subJob.name) {
             if (mails[subJob.data.actorUri]) {
-              mails[subJob.data.actorUri].push(subJob.data.objectUri)
+              // Make sure object is not pushed twice
+              if (!mails[subJob.data.actorUri].includes(subJob.data.objectUri)) {
+                mails[subJob.data.actorUri].push(subJob.data.objectUri);
+              }
             } else {
-              mails[subJob.data.actorUri] = [subJob.data.objectUri]
+              mails[subJob.data.actorUri] = [subJob.data.objectUri];
             }
             // Promote job so that it passes to completed state
             subJob.promote();
@@ -141,7 +144,9 @@ const MailerService = {
           job.progress(10);
 
           const html = this.confirmationMailTemplate({
-            locationParam: actor.location ? `A ${actor.location.radius / 1000} km de chez vous` : 'Dans le monde entier',
+            locationParam: actor.location && action.location.radius
+              ? `A ${actor.location.radius / 1000} km de chez vous`
+              : 'Dans le monde entier',
             themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
             frequency: actor['semapps:mailFrequency'] === 'daily' ? 'une fois par jour' : 'une fois par semaine',
             preferencesUrl: this.settings.baseUri + '?id=' + actor.id,
@@ -181,7 +186,9 @@ const MailerService = {
 
           const html = this.notificationMailTemplate({
             projects: projects,
-            locationParam: actor.location ? `A ${actor.location.radius / 1000} km de chez vous` : 'Dans le monde entier',
+            locationParam: actor.location
+              ? `A ${actor.location.radius / 1000} km de chez vous`
+              : 'Dans le monde entier',
             themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
             preferencesUrl: this.settings.baseUri + '?id=' + actor.id,
             email: actor['pair:e-mail']

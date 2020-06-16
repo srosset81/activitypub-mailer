@@ -116,10 +116,7 @@ describe('Test match-bot service', () => {
     const result = await job.finished();
 
     expect(result).toMatchObject({
-      [actors[3].id]: [
-        'http://localhost:3000/objects/mongrenier',
-        'http://localhost:3000/objects/chateau-darvieu'
-      ]
+      [actors[3].id]: ['http://localhost:3000/objects/mongrenier', 'http://localhost:3000/objects/chateau-darvieu']
     });
   });
 
@@ -129,9 +126,7 @@ describe('Test match-bot service', () => {
     const result = await job.finished();
 
     expect(result).toMatchObject({
-      [actors[1].id]: [
-        'http://localhost:3000/objects/chateau-darvieu'
-      ]
+      [actors[1].id]: ['http://localhost:3000/objects/chateau-darvieu']
     });
   });
 
@@ -147,10 +142,10 @@ describe('Test match-bot service', () => {
   });
 
   test('Send notification mail', async () => {
-    const job = await broker.call('mailer.sendNotificationMail', { actorUri: actors[3].id, objects: [
-      'http://localhost:3000/objects/mongrenier',
-      'http://localhost:3000/objects/chateau-darvieu'
-    ]});
+    const job = await broker.call('mailer.sendNotificationMail', {
+      actorUri: actors[3].id,
+      objects: ['http://localhost:3000/objects/mongrenier', 'http://localhost:3000/objects/chateau-darvieu']
+    });
 
     const result = await job.finished();
 

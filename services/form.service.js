@@ -30,7 +30,7 @@ const FormService = {
         };
       }
 
-      if (!actor.location) {
+      if (!actor.location || !actor.location.radius) {
         actor.location = { radius: '25000' };
       }
 
@@ -104,6 +104,7 @@ const FormService = {
         } else if (ctx.params.location === 'whole-world') {
           // If actor location was set, remove it
           if (actor && actor.location) {
+            // TODO find a way to remove location completely
             actorData.location = {
               type: 'Place'
             };
