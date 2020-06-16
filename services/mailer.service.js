@@ -144,9 +144,10 @@ const MailerService = {
           job.progress(10);
 
           const html = this.confirmationMailTemplate({
-            locationParam: actor.location && action.location.radius
-              ? `A ${actor.location.radius / 1000} km de chez vous`
-              : 'Dans le monde entier',
+            locationParam:
+              actor.location && action.location.radius
+                ? `A ${actor.location.radius / 1000} km de chez vous`
+                : 'Dans le monde entier',
             themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
             frequency: actor['semapps:mailFrequency'] === 'daily' ? 'une fois par jour' : 'une fois par semaine',
             preferencesUrl: this.settings.baseUri + '?id=' + actor.id,

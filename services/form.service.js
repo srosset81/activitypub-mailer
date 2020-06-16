@@ -4,6 +4,7 @@ const urlJoin = require('url-join');
 const fs = require('fs').promises;
 const { ACTIVITY_TYPES, PUBLIC_URI } = require('@semapps/activitypub');
 const CONFIG = require('../config');
+const { defaultToArray } = require('../utils');
 
 const FormService = {
   name: 'form',
@@ -154,12 +155,9 @@ const FormService = {
 
     Handlebars.registerHelper('ifInActorThemes', (elem, returnValue, options) => {
       const themes = this.getThemesUrisFromLabel(elem);
-      if (
-        options.data.root.actor &&
-        options.data.root.actor['pair:hasInterest'] &&
-        options.data.root.actor['pair:hasInterest'].some(interest => themes.includes(interest))
-      ) {
-        return returnValue;
+      if (options.data.root.actor && options.data.root.actor['pair:hasInterest']) {
+        const interests = defaultToArray(options.data.root.actor['pair:hasInterest']);
+        if (interests.some(interest => themes.includes(interest))) return returnValue;
       }
     });
 
