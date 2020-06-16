@@ -195,7 +195,7 @@ const FormService = {
     getThemesUrisFromLabel(label) {
       return (
         label &&
-        label.split(/[\s&]+/).map(themeLabel => urlJoin(CONFIG.THEMES_CONTAINER, slugify(themeLabel, { lower: true })))
+        label.split('&').map(themeLabel => urlJoin(CONFIG.THEMES_CONTAINER, slugify(themeLabel, { lower: true })))
       );
     }
   }
