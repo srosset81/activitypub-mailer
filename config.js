@@ -16,9 +16,10 @@ module.exports = {
   SMTP_HOST: process.env.SEMAPPS_SMTP_HOST,
   SMTP_USER: process.env.SEMAPPS_SMTP_USER,
   SMTP_PASS: process.env.SEMAPPS_SMTP_PASS,
-  // Queue
+  // Tracking
   QUEUE_SERVICE_URL: process.env.SEMAPPS_QUEUE_SERVICE_URL,
-  // COLIBRIS.SOCIAL
+  SENTRY_DSN: process.env.SEMAPPS_SENTRY_DSN,
+  // Colibris.social
   THEMES_CONTAINER: process.env.SEMAPPS_THEMES_CONTAINER,
-  FOLLOWING: process.env.SEMAPPS_FOLLOWING
+  FOLLOWING: process.env.SEMAPPS_FOLLOWING,
 };
