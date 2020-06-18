@@ -2,7 +2,7 @@ const mailer = require('nodemailer');
 const Handlebars = require('handlebars');
 const fs = require('fs').promises;
 const QueueService = require('moleculer-bull');
-const { ACTIVITY_TYPES } = require('@semapps/activitypub');
+const { ACTIVITY_TYPES, OBJECT_TYPES } = require('@semapps/activitypub');
 const CONFIG = require('../config');
 
 const MailerService = {
@@ -47,6 +47,14 @@ const MailerService = {
     this.createJob('buildNotificationMails', 'daily', {}, { repeat: { cron: '0 0 17 * * *' } });
     this.createJob('buildNotificationMails', 'weekly', {}, { repeat: { cron: '0 30 16 * * 4' } });
     this.getQueue('notifyActor').pause();
+
+    this.getQueue('notifyActor').on('global:cleaned', (jobs, type) => {
+      this.logger.info(`Cleaned jobs of type ${type}:`, jobs);
+    });
+
+    this.getQueue('notifyActor').on('global:removed', job => {
+      this.logger.info(`Removed job`, job);
+    });
   },
   actions: {
     sendConfirmationMail(ctx) {
@@ -181,9 +189,19 @@ const MailerService = {
 
           const actor = await this.broker.call('activitypub.actor.get', { id: actorUri });
           const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasInterest'] });
-          const projects = await this.broker.call('external-resource.getMany', { ids: objects });
+          let projects = await this.broker.call('external-resource.getMany', { ids: objects });
 
           job.progress(10);
+
+          // Make sure projects have not been deleted already
+          projects = projects.filter(project => project.type !== OBJECT_TYPES.TOMBSTONE);
+          if( projects.length === 0 ) {
+            job.log('Projects in the list have all been already deleted');
+            job.moveToFailed();
+            return;
+          }
+
+          job.progress(20);
 
           const html = this.notificationMailTemplate({
             projects: projects,
