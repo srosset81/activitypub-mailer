@@ -196,8 +196,7 @@ const MailerService = {
           // Make sure projects have not been deleted already
           projects = projects.filter(project => project.type !== OBJECT_TYPES.TOMBSTONE);
           if( projects.length === 0 ) {
-            job.log('Projects in the list have all been already deleted');
-            job.moveToFailed();
+            job.moveToFailed({ message: 'Projects in the list have all been already deleted' });
             return;
           }
 
