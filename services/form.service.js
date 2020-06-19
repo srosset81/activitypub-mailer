@@ -82,6 +82,10 @@ const FormService = {
           return this.redirectToForm(ctx, 'email-exist', actorByEmail.id);
         }
 
+        if (!ctx.params.themes) {
+          return this.redirectToForm(ctx, 'missing-themes', ctx.params.id);
+        }
+
         let themes = [];
         ctx.params.themes.forEach(themeLabel => {
           themes.push(this.getThemesUrisFromLabel(themeLabel));

@@ -47,14 +47,6 @@ const MailerService = {
     this.createJob('buildNotificationMails', 'daily', {}, { repeat: { cron: '0 0 17 * * *' } });
     this.createJob('buildNotificationMails', 'weekly', {}, { repeat: { cron: '0 30 16 * * 4' } });
     this.getQueue('notifyActor').pause();
-
-    this.getQueue('notifyActor').on('global:cleaned', (jobs, type) => {
-      this.logger.info(`Cleaned jobs of type ${type}:`, jobs);
-    });
-
-    this.getQueue('notifyActor').on('global:removed', job => {
-      this.logger.info(`Removed job`, job);
-    });
   },
   actions: {
     sendConfirmationMail(ctx) {
