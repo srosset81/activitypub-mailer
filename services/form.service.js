@@ -78,7 +78,7 @@ const FormService = {
 
         // Make sure email is not already used by another account
         const actorByEmail = await this.findActorByEmail(ctx.params.email);
-        if ((!actor && actorByEmail) || (actor && actor.id !== actorByEmail.id)) {
+        if ((!actor && actorByEmail) || (actor && actorByEmail && actor.id !== actorByEmail.id)) {
           return this.redirectToForm(ctx, 'email-exist', actorByEmail.id);
         }
 
