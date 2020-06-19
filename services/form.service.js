@@ -2,7 +2,7 @@ const Handlebars = require('handlebars');
 const slugify = require('slugify');
 const urlJoin = require('url-join');
 const fs = require('fs').promises;
-const { ACTIVITY_TYPES, PUBLIC_URI } = require('@semapps/activitypub');
+const { ACTIVITY_TYPES, OBJECT_TYPES, PUBLIC_URI } = require('@semapps/activitypub');
 const CONFIG = require('../config');
 const { defaultToArray } = require('../utils');
 
@@ -24,6 +24,12 @@ const FormService = {
         }
       }
 
+      // If no actor was found with the ID, try to find it with the email address
+      if (!actor && ctx.params.email) {
+        actor = await this.findActorByEmail(ctx.params.email);
+      }
+
+      // If no actor was found, fill default values
       if (!actor) {
         actor = {
           'pair:e-mail': ctx.params.email,
@@ -50,19 +56,15 @@ const FormService = {
           'Bien-être',
           'Autre'
         ],
-        id: ctx.params.id,
+        id: actor.id || ctx.params.id,
         actor,
         message: ctx.params.message
       });
     },
     async process(ctx) {
-      let message;
-
       if (ctx.params.unsubscribe) {
         await ctx.call('activitypub.actor.remove', { id: ctx.params.id });
-
-        ctx.meta.$statusCode = 302;
-        ctx.meta.$location = `/?message=deleted`;
+        return this.redirectToForm(ctx, 'deleted');
       } else {
         let actor;
 
@@ -72,6 +74,12 @@ const FormService = {
           } catch (e) {
             // Do nothing if actor is not found, the ID will be used for the creation
           }
+        }
+
+        // Make sure email is not already used by another account
+        const actorByEmail = await this.findActorByEmail(ctx.params.email);
+        if ((!actor && actorByEmail) || (actor && actor.id !== actorByEmail.id)) {
+          return this.redirectToForm(ctx, 'email-exist', actorByEmail.id);
         }
 
         let themes = [];
@@ -89,7 +97,7 @@ const FormService = {
           if (ctx.params['address-result']) {
             const address = JSON.parse(ctx.params['address-result']);
             actorData.location = {
-              type: 'Place',
+              type: OBJECT_TYPES.PLACE,
               name: ctx.params.address,
               latitude: address.latlng.lat,
               longitude: address.latlng.lng,
@@ -107,23 +115,21 @@ const FormService = {
           if (actor && actor.location) {
             // TODO find a way to remove location completely
             actorData.location = {
-              type: 'Place'
+              type: OBJECT_TYPES.PLACE
             };
           }
         }
 
         if (actor) {
           actor = await ctx.call('activitypub.actor.update', {
-            '@context': 'https://www.w3.org/ns/activitystreams',
             '@id': ctx.params.id,
             ...actorData
           });
 
-          message = 'updated';
+          return this.redirectToForm(ctx, 'updated', actor.id);
         } else {
           actor = await ctx.call('activitypub.actor.create', {
             slug: ctx.params.id,
-            '@context': 'https://www.w3.org/ns/activitystreams',
             type: 'Person',
             ...actorData
           });
@@ -140,11 +146,8 @@ const FormService = {
           // Do not wait for mail to be sent
           ctx.call('mailer.sendConfirmationMail', { actor });
 
-          message = 'created';
+          return this.redirectToForm(ctx, 'created', actor.id);
         }
-
-        ctx.meta.$statusCode = 302;
-        ctx.meta.$location = `/?id=${encodeURI(actor.id)}&message=${message}`;
       }
     }
   },
@@ -192,6 +195,24 @@ const FormService = {
     this.formTemplate = Handlebars.compile(templateFile.toString());
   },
   methods: {
+    redirectToForm(ctx, message, id) {
+      ctx.meta.$statusCode = 302;
+      if (id) {
+        ctx.meta.$location = `/?id=${encodeURI(id)}&message=${encodeURI(message)}`;
+      } else {
+        ctx.meta.$location = `/?message=${encodeURI(message)}`;
+      }
+    },
+    async findActorByEmail(email) {
+      try {
+        const result = await this.broker.call('activitypub.actor.find', { query: { 'pair:e-mail': email } });
+        if (result['ldp:contains'] && result['ldp:contains'].length > 0) {
+          return result['ldp:contains'][0];
+        }
+      } catch (e) {
+        // Do nothing if actor is not found
+      }
+    },
     getThemesUrisFromLabel(label) {
       return (
         label &&

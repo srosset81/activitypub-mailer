@@ -32,6 +32,9 @@
                             {{#ifCond message '===' 'deleted' }}
                                 <div class="messages success" id="success-message">Vous avez été désinscrit et vos informations ont été supprimées.</div>
                             {{/ifCond}}
+                            {{#ifCond message '===' 'email-exist' }}
+                            <div class="messages error">Un compte avec cette adresse e-mail existe déjà. Vous pouvez le mettre à jour ci-dessous.</div>
+                            {{/ifCond}}
                             <div>
                                 <label>Oui je souhaite être informé des nouveaux projets de la Fabrique</label>
                                 <div class="form-item form-type-radio">

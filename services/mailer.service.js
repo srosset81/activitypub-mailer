@@ -195,7 +195,7 @@ const MailerService = {
 
           // Make sure projects have not been deleted already
           projects = projects.filter(project => project.type !== OBJECT_TYPES.TOMBSTONE);
-          if( projects.length === 0 ) {
+          if (projects.length === 0) {
             job.moveToFailed({ message: 'Projects in the list have all been already deleted' });
             return;
           }
@@ -204,9 +204,10 @@ const MailerService = {
 
           const html = this.notificationMailTemplate({
             projects: projects,
-            locationParam: actor.location && actor.location.radius
-              ? `A ${actor.location.radius / 1000} km de chez vous`
-              : 'Dans le monde entier',
+            locationParam:
+              actor.location && actor.location.radius
+                ? `A ${actor.location.radius / 1000} km de chez vous`
+                : 'Dans le monde entier',
             themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
             preferencesUrl: this.settings.baseUri + '?id=' + actor.id,
             email: actor['pair:e-mail']
