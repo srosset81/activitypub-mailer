@@ -14,6 +14,7 @@ module.exports = {
   FROM_EMAIL: process.env.SEMAPPS_FROM_EMAIL,
   FROM_NAME: process.env.SEMAPPS_FROM_NAME,
   SMTP_HOST: process.env.SEMAPPS_SMTP_HOST,
+  SMTP_PORT: parseInt(process.env.SEMAPPS_SMTP_PORT, 10),
   SMTP_USER: process.env.SEMAPPS_SMTP_USER,
   SMTP_PASS: process.env.SEMAPPS_SMTP_PASS,
   // Tracking

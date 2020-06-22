@@ -15,7 +15,7 @@ const MailerService = {
     fromName: CONFIG.FROM_NAME,
     smtpServer: {
       host: CONFIG.SMTP_HOST,
-      port: 465,
+      port: CONFIG.SMTP_PORT,
       secure: true,
       auth: {
         user: CONFIG.SMTP_USER,
