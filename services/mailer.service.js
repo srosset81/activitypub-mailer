@@ -148,7 +148,7 @@ const MailerService = {
 
           const html = this.confirmationMailTemplate({
             locationParam:
-              actor.location && action.location.radius
+              actor.location && actor.location.radius
                 ? `A ${actor.location.radius / 1000} km de chez vous`
                 : 'Dans le monde entier',
             themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
