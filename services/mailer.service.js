@@ -163,6 +163,16 @@ const MailerService = {
           });
 
           job.log(html);
+          job.log(JSON.stringify({
+            host: CONFIG.SMTP_HOST,
+            port: CONFIG.SMTP_PORT,
+            secure: true,
+            auth: {
+              user: CONFIG.SMTP_USER,
+              pass: CONFIG.SMTP_PASS
+            }
+          }));
+
           job.progress(50);
 
           const result = await this.transporter.sendMail({
