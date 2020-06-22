@@ -46,12 +46,17 @@ const MatchBotService = {
       }
     },
     async getMatchingFollowers(activity) {
-      let matchingFollowers = [];
+      let matchingFollowers = [], actor;
       const actors = await this.getFollowers();
 
       for (let actorUri of actors) {
-        const actor = await this.broker.call('activitypub.actor.get', { id: actorUri });
-        if (this.matchInterests(activity.object, actor)) {
+        try {
+          actor = await this.broker.call('activitypub.actor.get', { id: actorUri });
+        } catch(e) {
+          // Actor not found
+          actor = null;
+        }
+        if (actor && this.matchInterests(activity.object, actor)) {
           if (this.matchLocation(activity.object, actor)) {
             matchingFollowers.push(actor.id);
           }
