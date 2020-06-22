@@ -23,5 +23,6 @@ module.exports = {
   SENTRY_DSN: process.env.SEMAPPS_SENTRY_DSN,
   // Colibris.social
   THEMES_CONTAINER: process.env.SEMAPPS_THEMES_CONTAINER,
-  FOLLOWING: process.env.SEMAPPS_FOLLOWING
+  FOLLOWING: process.env.SEMAPPS_FOLLOWING,
+  MONITORED_ACTIVITY_TYPES: process.env.SEMAPPS_MONITORED_ACTIVITY_TYPES.split(',').map(i => i.trim())
 };

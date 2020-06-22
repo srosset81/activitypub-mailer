@@ -32,7 +32,7 @@ const MatchBotService = {
       }
     },
     async inboxReceived(activity) {
-      if (activity.type === ACTIVITY_TYPES.CREATE || activity.type === ACTIVITY_TYPES.UPDATE) {
+      if (CONFIG.MONITORED_ACTIVITY_TYPES.includes(activity.type)) {
         const matchingFollowers = await this.getMatchingFollowers(activity);
 
         await this.broker.call('activitypub.outbox.post', {
