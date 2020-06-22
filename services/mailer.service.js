@@ -62,26 +62,34 @@ const MailerService = {
   },
   events: {
     async 'activitypub.inbox.received'({ activity, recipients }) {
+      let actor;
       if (
         activity.actor === this.settings.matchBotUri &&
         activity.type === ACTIVITY_TYPES.ANNOUNCE &&
         (activity.object.type === ACTIVITY_TYPES.CREATE || activity.object.type === ACTIVITY_TYPES.UPDATE)
       ) {
         for (let actorUri of recipients) {
-          const actor = await this.broker.call('activitypub.actor.get', { id: actorUri });
-          await this.createJob(
-            'notifyActor',
-            actor['semapps:mailFrequency'],
-            {
-              actorUri,
-              actorEmail: actor['pair:e-mail'],
-              objectUri: activity.object.object.id
-            },
-            {
-              // Add a one-month delay. The job will be treated by the buildNotificationMails job
-              delay: 2629800000
-            }
-          );
+          try {
+            actor = await this.broker.call('activitypub.actor.get', { id: actorUri });
+          } catch (e) {
+            // Actor not found
+            actor = null;
+          }
+          if (actor) {
+            await this.createJob(
+              'notifyActor',
+              actor['semapps:mailFrequency'],
+              {
+                actorUri,
+                actorEmail: actor['pair:e-mail'],
+                objectUri: activity.object.object.id
+              },
+              {
+                // Add a one-month delay. The job will be treated by the buildNotificationMails job
+                delay: 2629800000
+              }
+            );
+          }
         }
         this.broker.emit('mailer.objects.queued');
       }

@@ -46,13 +46,14 @@ const MatchBotService = {
       }
     },
     async getMatchingFollowers(activity) {
-      let matchingFollowers = [], actor;
+      let matchingFollowers = [],
+        actor;
       const actors = await this.getFollowers();
 
       for (let actorUri of actors) {
         try {
           actor = await this.broker.call('activitypub.actor.get', { id: actorUri });
-        } catch(e) {
+        } catch (e) {
           // Actor not found
           actor = null;
         }
