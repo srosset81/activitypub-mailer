@@ -135,6 +135,7 @@ const FormService = {
           actor = await ctx.call('activitypub.actor.create', {
             slug: ctx.params.id,
             type: 'Person',
+            published: new Date().toISOString(),
             ...actorData
           });
 
