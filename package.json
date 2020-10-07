@@ -11,10 +11,12 @@
     "test": "jest --detectOpenHandles --verbose"
   },
   "dependencies": {
-    "@semapps/activitypub": "0.1.12",
-    "@semapps/ldp": "0.1.12",
-    "@semapps/mime-types": "0.1.12",
-    "@semapps/triplestore": "0.1.12",
+    "@semapps/activitypub": "0.1.19",
+    "@semapps/ldp": "0.1.19",
+    "@semapps/mime-types": "0.1.19",
+    "@semapps/signature": "0.1.19",
+    "@semapps/triplestore": "0.1.19",
+    "@semapps/webfinger": "0.1.19",
     "@sentry/node": "^5.16.1",
     "@sentry/utils": "^5.16.1",
     "dotenv-flow": "^3.1.0",
