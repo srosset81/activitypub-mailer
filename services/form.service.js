@@ -93,14 +93,9 @@ const FormService = {
           return this.redirectToForm(ctx, 'missing-themes', ctx.params.id);
         }
 
-        let themes = [];
-        ctx.params.themes.forEach(themeLabel => {
-          themes.push(this.getThemesUrisFromLabel(themeLabel));
-        });
-
         let actorData = {
           'pair:e-mail': ctx.params.email,
-          'pair:hasTopic': themes,
+          'pair:hasTopic': ctx.params.themes.map(themeLabel => this.getThemesUrisFromLabel(themeLabel)),
           'semapps:mailFrequency': ctx.params.frequency
         };
 
@@ -142,23 +137,11 @@ const FormService = {
 
           return this.redirectToForm(ctx, 'updated', ctx.params.id);
         } else {
-          console.log({
-            containerUri: urlJoin(CONFIG.HOME_URL, 'actors'),
-            slug: ctx.params.id,
-            resource: {
-              '@context': 'https://www.w3.org/ns/activitystreams',
-              type: 'Person',
-              published: new Date().toISOString(),
-              ...actorData
-            },
-            contentType: MIME_TYPES.JSON
-          });
-
           const actorUri = await ctx.call('ldp.resource.post', {
             containerUri: urlJoin(CONFIG.HOME_URL, 'actors'),
             slug: ctx.params.id,
             resource: {
-              '@context': 'https://www.w3.org/ns/activitystreams',
+              '@context': CONFIG.DEFAULT_JSON_CONTEXT,
               type: 'Person',
               published: new Date().toISOString(),
               ...actorData
@@ -168,7 +151,7 @@ const FormService = {
 
           const actor = await ctx.call('activitypub.actor.awaitCreateComplete', { actorUri });
 
-          await ctx.call('activitypub.outbox.post', {
+          ctx.call('activitypub.outbox.post', {
             collectionUri: actor.outbox,
             '@context': 'https://www.w3.org/ns/activitystreams',
             actor: actor.id,

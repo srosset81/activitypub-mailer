@@ -78,7 +78,7 @@ const MatchBotService = {
     matchInterests(object, actor) {
       const actorTopics = defaultToArray(actor['pair:hasTopic']);
       const activityTopics = defaultToArray(object['pair:hasTopic']);
-      return actorTopics.filter(theme => activityTopics.includes(theme)).length > 0;
+      return actorTopics && activityTopics && actorTopics.filter(theme => activityTopics.includes(theme)).length > 0;
     },
     matchLocation(object, actor) {
       // If no location is set for the actor, we assume he wants to be notified of all objects
