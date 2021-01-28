@@ -186,7 +186,7 @@ const MailerService = {
         async process(job) {
           const { actorUri, objects } = job.data;
 
-          const actor = await this.broker.call('activitypub.actor.get', { id: actorUri });
+          const actor = await this.broker.call('ldp.resource.get', { resourceUri: actorUri, accept: MIME_TYPES.JSON });
           const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasInterest'] });
           let projects = await this.broker.call('external-resource.getMany', { ids: objects });
 
