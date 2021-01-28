@@ -146,7 +146,7 @@ const MailerService = {
         name: 'confirmation',
         async process(job) {
           const { actor } = job.data;
-          const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasInterest'] });
+          const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasTopic'] });
 
           job.progress(10);
 

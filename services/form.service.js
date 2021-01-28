@@ -75,7 +75,7 @@ const FormService = {
         if (ctx.params.id) {
           try {
             actor = await ctx.call('ldp.resource.get', {
-              resourceUri: urlJoin(CONFIG.HOME_URL, 'actors', ctx.params.id) ,
+              resourceUri: ctx.params.id.startsWith('http') ? ctx.params.id : urlJoin(CONFIG.HOME_URL, 'actors', ctx.params.id),
               accept: MIME_TYPES.JSON
             });
           } catch (e) {
@@ -175,8 +175,8 @@ const FormService = {
 
     Handlebars.registerHelper('ifInActorThemes', (elem, returnValue, options) => {
       const themes = this.getThemesUrisFromLabel(elem);
-      if (options.data.root.actor && options.data.root.actor['pair:hasInterest']) {
-        const interests = defaultToArray(options.data.root.actor['pair:hasInterest']);
+      if (options.data.root.actor && options.data.root.actor['pair:hasTopic']) {
+        const interests = defaultToArray(options.data.root.actor['pair:hasTopic']);
         if (interests.some(interest => themes.includes(interest))) return returnValue;
       }
     });
