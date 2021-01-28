@@ -155,7 +155,7 @@ const MailerService = {
               actor.location && actor.location.radius
                 ? `A ${actor.location.radius / 1000} km de chez vous`
                 : 'Dans le monde entier',
-            themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
+            themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:label']).join(', ')}`,
             frequency: actor['semapps:mailFrequency'] === 'daily' ? 'une fois par jour' : 'une fois par semaine',
             preferencesUrl: this.settings.baseUri + '?id=' + actor.id,
             email: actor['pair:e-mail']
@@ -187,7 +187,7 @@ const MailerService = {
           const { actorUri, objects } = job.data;
 
           const actor = await this.broker.call('ldp.resource.get', { resourceUri: actorUri, accept: MIME_TYPES.JSON });
-          const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasInterest'] });
+          const themes = await this.broker.call('external-resource.getMany', { ids: actor['pair:hasTopic'] });
           let projects = await this.broker.call('external-resource.getMany', { ids: objects });
 
           job.progress(10);
@@ -207,7 +207,7 @@ const MailerService = {
               actor.location && actor.location.radius
                 ? `A ${actor.location.radius / 1000} km de chez vous`
                 : 'Dans le monde entier',
-            themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:preferedLabel']).join(', ')}`,
+            themeParam: `Concernant les thématiques: ${themes.map(theme => theme['pair:label']).join(', ')}`,
             preferencesUrl: this.settings.baseUri + '?id=' + actor.id,
             email: actor['pair:e-mail']
           });
