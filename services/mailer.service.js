@@ -3,6 +3,7 @@ const Handlebars = require('handlebars');
 const fs = require('fs').promises;
 const QueueService = require('moleculer-bull');
 const { ACTIVITY_TYPES, OBJECT_TYPES } = require('@semapps/activitypub');
+const { MIME_TYPES } = require('@semapps/mime-types');
 const CONFIG = require('../config');
 
 const MailerService = {
@@ -65,7 +66,10 @@ const MailerService = {
       if (activity.actor === this.settings.matchBotUri && activity.type === ACTIVITY_TYPES.ANNOUNCE) {
         for (let actorUri of recipients) {
           try {
-            actor = await this.broker.call('activitypub.actor.get', { id: actorUri });
+            actor = await this.broker.call('ldp.resource.get', {
+              resourceUri: actorUri,
+              accept: MIME_TYPES.JSON
+            });
           } catch (e) {
             // Actor not found
             actor = null;
@@ -77,7 +81,7 @@ const MailerService = {
               {
                 actorUri,
                 actorEmail: actor['pair:e-mail'],
-                objectUri: activity.object.object.id
+                objectUri: activity.object
               },
               {
                 // Add a one-month delay. The job will be treated by the buildNotificationMails job

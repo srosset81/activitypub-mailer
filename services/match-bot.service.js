@@ -1,20 +1,22 @@
 const urlJoin = require('url-join');
 const { BotService, ACTIVITY_TYPES, PUBLIC_URI } = require('@semapps/activitypub');
+const { MIME_TYPES } = require('@semapps/mime-types');
 const CONFIG = require('../config');
+const { defaultToArray } = require('../utils');
 
 const MatchBotService = {
   name: 'match-bot',
   mixins: [BotService],
   settings: {
     actor: {
-      username: 'match-bot',
+      uri: urlJoin(CONFIG.HOME_URL, 'actors', 'match-bot'),
       name: 'Match Bot'
     }
   },
   actions: {
     async followActor(ctx) {
       await ctx.call('activitypub.outbox.post', {
-        username: this.settings.actor.username,
+        collectionUri: urlJoin(this.settings.actor.uri, 'outbox'),
         '@context': 'https://www.w3.org/ns/activitystreams',
         actor: this.settings.actor.uri,
         type: ACTIVITY_TYPES.FOLLOW,
@@ -32,33 +34,40 @@ const MatchBotService = {
       }
     },
     async inboxReceived(activity) {
-      if (CONFIG.MONITORED_ACTIVITY_TYPES.includes(activity.type)) {
-        const matchingFollowers = await this.getMatchingFollowers(activity);
-
-        await this.broker.call('activitypub.outbox.post', {
-          collectionUri: this.settings.actor.uri + '/outbox',
-          '@context': activity['@context'],
-          actor: this.settings.actor.uri,
-          to: [PUBLIC_URI, ...matchingFollowers],
-          type: ACTIVITY_TYPES.ANNOUNCE,
-          object: activity
-        });
+      if (activity.type === ACTIVITY_TYPES.ANNOUNCE) {
+        const object = await this.broker.call('external-resource.getOne', { id: activity.object });
+        if( object ) {
+          const matchingFollowers = await this.getMatchingFollowers(object);
+          await this.broker.call('activitypub.outbox.post', {
+            collectionUri: urlJoin(this.settings.actor.uri, 'outbox'),
+            '@context': activity['@context'],
+            actor: this.settings.actor.uri,
+            to: [PUBLIC_URI, ...matchingFollowers],
+            type: ACTIVITY_TYPES.ANNOUNCE,
+            object: activity.object
+          });
+        } else {
+          console.warn('Unable to fetch external resource', activity.object);
+        }
       }
     },
-    async getMatchingFollowers(activity) {
-      let matchingFollowers = [],
-        actor;
+    async getMatchingFollowers(object) {
+      let matchingFollowers = [], actor;
       const actors = await this.getFollowers();
 
       for (let actorUri of actors) {
         try {
-          actor = await this.broker.call('activitypub.actor.get', { id: actorUri });
+          actor = await this.broker.call('ldp.resource.get', {
+            resourceUri: actorUri,
+            accept: MIME_TYPES.JSON
+          });
         } catch (e) {
           // Actor not found
           actor = null;
         }
-        if (actor && this.matchInterests(activity.object, actor)) {
-          if (this.matchLocation(activity.object, actor)) {
+
+        if (actor && this.matchInterests(object, actor)) {
+          if (this.matchLocation(object, actor)) {
             matchingFollowers.push(actor.id);
           }
         }
@@ -67,13 +76,9 @@ const MatchBotService = {
       return matchingFollowers;
     },
     matchInterests(object, actor) {
-      const actorInterests = Array.isArray(actor['pair:hasInterest'])
-        ? actor['pair:hasInterest']
-        : [actor['pair:hasInterest']];
-      const activityInterests = Array.isArray(object['pair:interestOf'])
-        ? object['pair:interestOf']
-        : [object['pair:interestOf']];
-      return actorInterests.filter(theme => activityInterests.includes(theme)).length > 0;
+      const actorTopics = defaultToArray(actor['pair:hasTopic']);
+      const activityTopics = defaultToArray(object['pair:hasTopic']);
+      return actorTopics.filter(theme => activityTopics.includes(theme)).length > 0;
     },
     matchLocation(object, actor) {
       // If no location is set for the actor, we assume he wants to be notified of all objects

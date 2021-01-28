@@ -29,11 +29,12 @@ const ApiService = {
       }
     ]
   },
-  dependencies: ['activitypub'],
+  dependencies: ['ldp', 'activitypub', 'webfinger'],
   async started() {
     [
+      ...(await this.broker.call('ldp.getApiRoutes')),
       ...(await this.broker.call('activitypub.getApiRoutes')),
-      ...getContainerRoutes(urlJoin(CONFIG.HOME_URL, 'themes'), 'themes')
+      ...(await this.broker.call('webfinger.getApiRoutes')),
     ].forEach(route => this.addRoute(route));
   }
 };

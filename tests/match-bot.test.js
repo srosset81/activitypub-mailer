@@ -1,7 +1,8 @@
 const { ServiceBroker } = require('moleculer');
 const mailer = require('nodemailer');
 const fetch = require('node-fetch');
-const EventsWatcher = require('../../../tests/middleware/EventsWatcher');
+const { MIME_TYPES } = require('@semapps/mime-types');
+const EventsWatcher = require('./EventsWatcher');
 const path = require('path');
 const CONFIG = require('../config');
 
@@ -34,11 +35,20 @@ describe('Test match-bot service', () => {
   const matchBotUri = 'http://localhost:4000/actors/match-bot';
 
   test('Create 3 actors and make them follow the match bot', async () => {
-    actors[1] = await broker.call('activitypub.actor.create', require('./actors/actor1.json'));
-    actors[2] = await broker.call('activitypub.actor.create', require('./actors/actor2.json'));
-    actors[3] = await broker.call('activitypub.actor.create', require('./actors/actor3.json'));
-
+    let actorUri;
     for (let i = 1; i <= 3; i++) {
+      actorUri = await broker.call('ldp.resource.post', {
+        containerUri: 'http://localhost:3000/actors/',
+        resource: require(`./actors/actor${i}.json`),
+        contentType: MIME_TYPES.JSON
+      });
+
+      console.log('actorUri', actorUri);
+
+      actors[i] = await broker.call('activitypub.actor.awaitCreateComplete', { resourceUri: actorUri });
+
+      console.log('actors[1]', actors[i]);
+
       await broker.call('activitypub.outbox.post', {
         collectionUri: actors[i].outbox,
         '@context': 'https://www.w3.org/ns/activitystreams',
