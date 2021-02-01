@@ -22,6 +22,7 @@ module.exports = {
   // Tracking
   QUEUE_SERVICE_URL: process.env.SEMAPPS_QUEUE_SERVICE_URL,
   SENTRY_DSN: process.env.SEMAPPS_SENTRY_DSN,
+  SENTRY_ENVIRONMENT: process.env.SEMAPPS_SENTRY_ENVIRONMENT,
   // Colibris.social
   THEMES_CONTAINER: process.env.SEMAPPS_THEMES_CONTAINER,
   FOLLOWING: process.env.SEMAPPS_FOLLOWING
