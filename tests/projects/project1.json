@@ -9,35 +9,10 @@
       "semapps": "http://semapps.org/ns/core#"
     }
   ],
-  "id": "http://localhost:3000/activities/5ebea90ac08492f20bf53cf7",
-  "type": "Create",
-  "actor": "http://localhost:3000/actors/lafabrique",
-  "object": {
-    "id": "http://localhost:3000/objects/mongrenier",
-    "type": "pair:Project",
-    "pair:aboutPage": "https://www.colibris-lafabrique.org/les-projets/mongrenier",
-    "pair:description": "A la recherche de nouveaux habitants, pour nous aider à façonner joyeusement notre nouvel espace de vie !",
-    "pair:interestOf": [
-      "http://localhost:3000/themes/oasis",
-      "http://localhost:3000/themes/habitat",
-      "http://localhost:3000/themes/culture",
-      "http://localhost:3000/themes/arts"
-    ],
-    "pair:involves": {
-      "id": "http://localhost:3000/actors/lafabrique"
-    },
-    "pair:label": "Mongrenier",
-    "image": {
-      "type": "Image",
-      "url": "https://www.colibris-lafabrique.org/sites/default/files/styles/projet_large/public/projets/img_5711_1.jpg"
-    },
-    "location": {
-      "type": "Place",
-      "latitude": "43.141212",
-      "longitude": "2.184907",
-      "name": "Villarzel du razes"
-    }
-  },
-  "published": "2020-05-15T14:36:58.974Z",
-  "to": "http://localhost:3000/actors/lafabrique/followers"
+  "id": "http://localhost:3000/activities/600f02a3ff3da341340d0856",
+  "type": "Announce",
+  "actor": "http://localhost:3000/services/lafabrique",
+  "object": "http://localhost:3000/projects/hameau-des-buis-ecole-la-ferme-des-enfants",
+  "published": "2021-01-25T17:40:51.961Z",
+  "to": "http://localhost:3000/services/lafabrique/followers"
 }
