@@ -43,10 +43,10 @@ npm run dev
 
 ## Testing
 
-Create a `mailerTest` dataset in your Jena Fuseki instance and run this command:
-
-```
-npm run test
-```
+- Create a `mailerTest` dataset in your Jena Fuseki instance 
+- Run an instance of colibris.social in port 3000 with these two actors:
+    - http://localhost:3000/projects/hameau-des-buis-ecole-la-ferme-des-enfants
+    - http://localhost:3000/projects/chateau-darvieu
+- Run the command `npm run test`
 
 By default this will use the [ethereal.email](https://ethereal.email) service to test the emails. The URL of the generated emails will be displayed in the console at the end of the test.
