@@ -3,6 +3,7 @@ const slugify = require('slugify');
 const urlJoin = require('url-join');
 const fs = require('fs').promises;
 const { ACTIVITY_TYPES, OBJECT_TYPES, PUBLIC_URI } = require('@semapps/activitypub');
+const { MIME_TYPES } = require('@semapps/mime-types');
 const CONFIG = require('../config');
 const { defaultToArray } = require('../utils');
 
@@ -18,7 +19,10 @@ const FormService = {
 
       if (ctx.params.id) {
         try {
-          actor = await ctx.call('activitypub.actor.get', { id: ctx.params.id });
+          actor = await ctx.call('ldp.resource.get', {
+            resourceUri: ctx.params.id.startsWith('http') ? ctx.params.id : urlJoin(CONFIG.HOME_URL, 'actors', ctx.params.id),
+            accept: MIME_TYPES.JSON
+          });
         } catch (e) {
           // Do nothing if actor is not found, the ID will be used for the creation
         }
@@ -63,14 +67,17 @@ const FormService = {
     },
     async process(ctx) {
       if (ctx.params.unsubscribe) {
-        await ctx.call('activitypub.actor.remove', { id: ctx.params.id });
+        await ctx.call('ldp.resource.delete', { resourceUri: urlJoin(CONFIG.HOME_URL, 'actors', ctx.params.id) });
         return this.redirectToForm(ctx, 'deleted');
       } else {
         let actor;
 
         if (ctx.params.id) {
           try {
-            actor = await ctx.call('activitypub.actor.get', { id: ctx.params.id });
+            actor = await ctx.call('ldp.resource.get', {
+              resourceUri: ctx.params.id.startsWith('http') ? ctx.params.id : urlJoin(CONFIG.HOME_URL, 'actors', ctx.params.id),
+              accept: MIME_TYPES.JSON
+            });
           } catch (e) {
             // Do nothing if actor is not found, the ID will be used for the creation
           }
@@ -86,14 +93,9 @@ const FormService = {
           return this.redirectToForm(ctx, 'missing-themes', ctx.params.id);
         }
 
-        let themes = [];
-        ctx.params.themes.forEach(themeLabel => {
-          themes.push(this.getThemesUrisFromLabel(themeLabel));
-        });
-
         let actorData = {
           'pair:e-mail': ctx.params.email,
-          'pair:hasInterest': themes,
+          'pair:hasTopic': ctx.params.themes.map(themeLabel => this.getThemesUrisFromLabel(themeLabel)),
           'semapps:mailFrequency': ctx.params.frequency
         };
 
@@ -125,21 +127,31 @@ const FormService = {
         }
 
         if (actor) {
-          actor = await ctx.call('activitypub.actor.update', {
-            '@id': ctx.params.id,
-            ...actorData
+          await ctx.call('ldp.resource.patch', {
+            resource: {
+              '@id': ctx.params.id,
+              ...actorData
+            },
+            contentType: MIME_TYPES.JSON
           });
 
-          return this.redirectToForm(ctx, 'updated', actor.id);
+          return this.redirectToForm(ctx, 'updated', ctx.params.id);
         } else {
-          actor = await ctx.call('activitypub.actor.create', {
+          const actorUri = await ctx.call('ldp.resource.post', {
+            containerUri: urlJoin(CONFIG.HOME_URL, 'actors'),
             slug: ctx.params.id,
-            type: 'Person',
-            published: new Date().toISOString(),
-            ...actorData
+            resource: {
+              '@context': CONFIG.DEFAULT_JSON_CONTEXT,
+              type: 'Person',
+              published: new Date().toISOString(),
+              ...actorData
+            },
+            contentType: MIME_TYPES.JSON
           });
 
-          await ctx.call('activitypub.outbox.post', {
+          const actor = await ctx.call('activitypub.actor.awaitCreateComplete', { actorUri });
+
+          ctx.call('activitypub.outbox.post', {
             collectionUri: actor.outbox,
             '@context': 'https://www.w3.org/ns/activitystreams',
             actor: actor.id,
@@ -163,8 +175,8 @@ const FormService = {
 
     Handlebars.registerHelper('ifInActorThemes', (elem, returnValue, options) => {
       const themes = this.getThemesUrisFromLabel(elem);
-      if (options.data.root.actor && options.data.root.actor['pair:hasInterest']) {
-        const interests = defaultToArray(options.data.root.actor['pair:hasInterest']);
+      if (options.data.root.actor && options.data.root.actor['pair:hasTopic']) {
+        const interests = defaultToArray(options.data.root.actor['pair:hasTopic']);
         if (interests.some(interest => themes.includes(interest))) return returnValue;
       }
     });
@@ -210,7 +222,10 @@ const FormService = {
     },
     async findActorByEmail(email) {
       try {
-        const result = await this.broker.call('activitypub.actor.find', { query: { 'pair:e-mail': email } });
+        const result = await this.broker.call('ldp.container.get', {
+          containerUri: urlJoin(CONFIG.HOME_URL, 'actors'),
+          filters: { 'pair:e-mail': email }
+        });
         if (result['ldp:contains'] && result['ldp:contains'].length > 0) {
           return result['ldp:contains'][0];
         }

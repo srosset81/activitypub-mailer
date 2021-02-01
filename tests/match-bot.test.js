@@ -1,7 +1,9 @@
 const { ServiceBroker } = require('moleculer');
+const urlJoin = require('url-join');
 const mailer = require('nodemailer');
 const fetch = require('node-fetch');
-const EventsWatcher = require('../../../tests/middleware/EventsWatcher');
+const { MIME_TYPES } = require('@semapps/mime-types');
+const EventsWatcher = require('./EventsWatcher');
 const path = require('path');
 const CONFIG = require('../config');
 
@@ -34,11 +36,16 @@ describe('Test match-bot service', () => {
   const matchBotUri = 'http://localhost:4000/actors/match-bot';
 
   test('Create 3 actors and make them follow the match bot', async () => {
-    actors[1] = await broker.call('activitypub.actor.create', require('./actors/actor1.json'));
-    actors[2] = await broker.call('activitypub.actor.create', require('./actors/actor2.json'));
-    actors[3] = await broker.call('activitypub.actor.create', require('./actors/actor3.json'));
-
+    let actorUri;
     for (let i = 1; i <= 3; i++) {
+      actorUri = await broker.call('ldp.resource.post', {
+        containerUri: 'http://localhost:4000/actors/',
+        resource: require(`./actors/actor${i}.json`),
+        contentType: MIME_TYPES.JSON
+      });
+
+      actors[i] = await broker.call('activitypub.actor.awaitCreateComplete', { actorUri });
+
       await broker.call('activitypub.outbox.post', {
         collectionUri: actors[i].outbox,
         '@context': 'https://www.w3.org/ns/activitystreams',
@@ -55,58 +62,56 @@ describe('Test match-bot service', () => {
   });
 
   test('Post project 1 and announce it to actor 3', async () => {
-    await broker.call('activitypub.inbox.post', {
-      username: 'match-bot',
-      ...require('./projects/project1.json')
-    });
+    await broker.call(
+      'activitypub.inbox.post',
+      {
+          collectionUri: urlJoin(matchBotUri, 'inbox'),
+          ...require('./projects/project1.json')
+      },
+      { meta: { skipSignatureValidation: true }}
+    );
 
     await broker.watchForEvent('mailer.objects.queued');
 
     // Actor 3 should match with this project
-    const outbox = await broker.call('activitypub.inbox.list', {
-      collectionUri: matchBotUri + '/outbox'
+    const inbox = await broker.call('activitypub.inbox.list', {
+      collectionUri: matchBotUri + '/outbox',
+      page: 1
     });
 
-    expect(outbox.orderedItems).not.toBeNull();
-    expect(outbox.orderedItems[0]).toMatchObject({
+    expect(inbox.orderedItems).not.toBeNull();
+    expect(inbox.orderedItems[0]).toMatchObject({
       type: 'Announce',
       actor: matchBotUri,
-      object: {
-        type: 'Create',
-        object: {
-          type: 'pair:Project',
-          id: 'http://localhost:3000/objects/mongrenier'
-        }
-      },
+      object: "http://localhost:3000/projects/hameau-des-buis-ecole-la-ferme-des-enfants",
       to: [actors[3].id, 'as:Public']
     });
   });
 
   test('Post project 2 and announce it to actors 1 and 3', async () => {
-    await broker.call('activitypub.inbox.post', {
-      username: 'match-bot',
-      ...require('./projects/project2.json')
-    });
+    await broker.call(
+      'activitypub.inbox.post',
+      {
+        collectionUri: urlJoin(matchBotUri, 'inbox'),
+        ...require('./projects/project2.json')
+      },
+      { meta: { skipSignatureValidation: true }}
+    );
 
     await broker.watchForEvent('mailer.objects.queued');
 
     // Actors 1 and 3 should match
     const outbox = await broker.call('activitypub.inbox.list', {
-      collectionUri: matchBotUri + '/outbox'
+      collectionUri: matchBotUri + '/outbox',
+      page: 1
     });
 
     expect(outbox.orderedItems).not.toBeNull();
     expect(outbox.orderedItems[0]).toMatchObject({
       type: 'Announce',
       actor: matchBotUri,
-      object: {
-        type: 'Create',
-        object: {
-          type: 'pair:Project',
-          id: 'http://localhost:3000/objects/chateau-darvieu'
-        }
-      },
-      to: [actors[1].id, actors[3].id, 'as:Public']
+      object: 'http://localhost:3000/projects/chateau-darvieu',
+      to: [actors[3].id, actors[1].id, 'as:Public']
     });
   });
 
@@ -116,7 +121,7 @@ describe('Test match-bot service', () => {
     const result = await job.finished();
 
     expect(result).toMatchObject({
-      [actors[3].id]: ['http://localhost:3000/objects/mongrenier', 'http://localhost:3000/objects/chateau-darvieu']
+      [actors[3].id]: ['http://localhost:3000/projects/hameau-des-buis-ecole-la-ferme-des-enfants', 'http://localhost:3000/projects/chateau-darvieu']
     });
   });
 
@@ -126,7 +131,7 @@ describe('Test match-bot service', () => {
     const result = await job.finished();
 
     expect(result).toMatchObject({
-      [actors[1].id]: ['http://localhost:3000/objects/chateau-darvieu']
+      [actors[1].id]: ['http://localhost:3000/projects/chateau-darvieu']
     });
   });
 
@@ -138,13 +143,14 @@ describe('Test match-bot service', () => {
     const previewUrl = mailer.getTestMessageUrl(result);
     console.log('CONFIRMATION MAIL PREVIEW', previewUrl);
 
+    expect(result).not.toBeNull();
     expect(result.accepted[0]).toBe('sebastien@test.com');
   });
 
   test('Send notification mail', async () => {
     const job = await broker.call('mailer.sendNotificationMail', {
       actorUri: actors[3].id,
-      objects: ['http://localhost:3000/objects/mongrenier', 'http://localhost:3000/objects/chateau-darvieu']
+      objects: ['http://localhost:3000/projects/hameau-des-buis-ecole-la-ferme-des-enfants', 'http://localhost:3000/projects/chateau-darvieu']
     });
 
     const result = await job.finished();
@@ -152,6 +158,7 @@ describe('Test match-bot service', () => {
     const previewUrl = mailer.getTestMessageUrl(result);
     console.log('NOTIFICATION MAIL PREVIEW', previewUrl);
 
+    expect(result).not.toBeNull();
     expect(result.accepted[0]).toBe('loic@test.com');
   });
 });

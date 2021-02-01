@@ -5,6 +5,7 @@ require('dotenv-flow').config();
 module.exports = {
   HOME_URL: process.env.SEMAPPS_HOME_URL,
   PORT: process.env.SEMAPPS_PORT,
+  DEFAULT_JSON_CONTEXT: process.env.SEMAPPS_DEFAULT_JSON_CONTEXT,
   // Triple store
   SPARQL_ENDPOINT: process.env.SEMAPPS_SPARQL_ENDPOINT,
   MAIN_DATASET: process.env.SEMAPPS_MAIN_DATASET,
@@ -23,6 +24,5 @@ module.exports = {
   SENTRY_DSN: process.env.SEMAPPS_SENTRY_DSN,
   // Colibris.social
   THEMES_CONTAINER: process.env.SEMAPPS_THEMES_CONTAINER,
-  FOLLOWING: process.env.SEMAPPS_FOLLOWING,
-  MONITORED_ACTIVITY_TYPES: process.env.SEMAPPS_MONITORED_ACTIVITY_TYPES.split(',').map(i => i.trim())
+  FOLLOWING: process.env.SEMAPPS_FOLLOWING
 };

@@ -1,14 +1,8 @@
 {
-  "@context": [
-    "https://www.w3.org/ns/activitystreams",
-    {
-      "pair": "http://virtual-assembly.org/ontologies/pair#",
-      "semapps": "http://semapps.org/ns/core#"
-    }
-  ],
+  "@context": "https://dev.colibris.social/context.json",
   "type": "Person",
   "pair:e-mail": "gabriel@test.com",
-  "pair:hasInterest": [
+  "pair:hasTopic": [
     "http://localhost:3000/themes/democratie",
     "http://localhost:3000/themes/transport"
   ],
