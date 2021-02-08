@@ -67,7 +67,7 @@ const FormService = {
     },
     async process(ctx) {
       if (ctx.params.unsubscribe) {
-        await ctx.call('ldp.resource.delete', { resourceUri: urlJoin(CONFIG.HOME_URL, 'actors', ctx.params.id) });
+        await ctx.call('ldp.resource.delete', { resourceUri: ctx.params.id.startsWith('http') ? ctx.params.id : urlJoin(CONFIG.HOME_URL, 'actors', ctx.params.id) });
         return this.redirectToForm(ctx, 'deleted');
       } else {
         let actor;
