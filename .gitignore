@@ -1,4 +1,6 @@
 node_modules
 actors
+/imports/*.json
+/imports/*.csv
 .env.local
 .env.*.local

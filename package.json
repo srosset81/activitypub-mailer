@@ -14,6 +14,7 @@
   "dependencies": {
     "@semapps/activitypub": "0.1.44-alpha.1",
     "@semapps/ldp": "0.1.44-alpha.1",
+    "@semapps/importer": "0.1.44-alpha.1",
     "@semapps/mime-types": "0.1.44-alpha.1",
     "@semapps/signature": "0.1.44-alpha.1",
     "@semapps/triplestore": "0.1.44-alpha.1",
