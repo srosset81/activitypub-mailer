@@ -199,6 +199,14 @@ const MailerService = {
             return;
           }
 
+          // Select the first image
+          projects = projects.map(project => {
+            if( Array.isArray(project.image) ) {
+              project.image = project.image[0];
+            }
+            return project;
+          });
+
           job.progress(20);
 
           const html = this.notificationMailTemplate({
