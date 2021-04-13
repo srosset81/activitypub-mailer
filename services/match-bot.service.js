@@ -84,12 +84,12 @@ const MatchBotService = {
       // If no location is set for the actor, we assume he wants to be notified of all objects
       if (!actor.location || !actor.location.latitude) return true;
       // If no location is set for the object but actor want a notification by location, do not match
-      if (!object.location || !object.location.latitude) return false;
+      if (!object['pair:hasLocation'] || !object['pair:hasLocation']['pair:latitude']) return false;
       const distance = this.distanceBetweenPoints(
         parseFloat(actor.location.latitude),
         parseFloat(actor.location.longitude),
-        parseFloat(object.location.latitude),
-        parseFloat(object.location.longitude)
+        parseFloat(object['pair:hasLocation']['pair:latitude']),
+        parseFloat(object['pair:hasLocation']['pair:longitude'])
       );
       return distance <= parseFloat(actor.location.radius) / 1000;
     },
