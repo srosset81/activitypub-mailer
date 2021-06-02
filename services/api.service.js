@@ -1,6 +1,4 @@
-const urlJoin = require('url-join');
 const ApiGateway = require('moleculer-web');
-const { getContainerRoutes } = require('@semapps/ldp');
 const CONFIG = require('../config');
 
 const ApiService = {
@@ -28,14 +26,6 @@ const ApiService = {
         }
       }
     ]
-  },
-  dependencies: ['ldp', 'activitypub', 'webfinger'],
-  async started() {
-    [
-      ...(await this.broker.call('ldp.getApiRoutes')),
-      ...(await this.broker.call('activitypub.getApiRoutes')),
-      ...(await this.broker.call('webfinger.getApiRoutes')),
-    ].forEach(route => this.addRoute(route));
   }
 };
 
