@@ -46,14 +46,18 @@ describe('Test match-bot service', () => {
 
       actors[i] = await broker.call('activitypub.actor.awaitCreateComplete', { actorUri });
 
-      await broker.call('activitypub.outbox.post', {
-        collectionUri: actors[i].outbox,
-        '@context': 'https://www.w3.org/ns/activitystreams',
-        actor: actors[i].id,
-        type: 'Follow',
-        object: matchBotUri,
-        to: [actors[i].followers, matchBotUri]
-      });
+      await broker.call(
+        'activitypub.outbox.post',
+        {
+          collectionUri: actors[i].outbox,
+          '@context': 'https://www.w3.org/ns/activitystreams',
+          actor: actors[i].id,
+          type: 'Follow',
+          object: matchBotUri,
+          to: [actors[i].followers, matchBotUri]
+        },
+        { meta: { webId: actors[i].id } }
+      );
 
       const followEvent = await broker.watchForEvent('activitypub.follow.added');
 

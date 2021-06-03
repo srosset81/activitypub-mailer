@@ -15,14 +15,18 @@ const MatchBotService = {
   },
   actions: {
     async followActor(ctx) {
-      await ctx.call('activitypub.outbox.post', {
-        collectionUri: urlJoin(this.settings.actor.uri, 'outbox'),
-        '@context': 'https://www.w3.org/ns/activitystreams',
-        actor: this.settings.actor.uri,
-        type: ACTIVITY_TYPES.FOLLOW,
-        object: CONFIG.FOLLOWING,
-        to: [CONFIG.FOLLOWING, urlJoin(this.settings.actor.uri, 'followers')]
-      });
+      await ctx.call(
+        'activitypub.outbox.post',
+        {
+          collectionUri: urlJoin(this.settings.actor.uri, 'outbox'),
+          '@context': 'https://www.w3.org/ns/activitystreams',
+          actor: this.settings.actor.uri,
+          type: ACTIVITY_TYPES.FOLLOW,
+          object: CONFIG.FOLLOWING,
+          to: [CONFIG.FOLLOWING, urlJoin(this.settings.actor.uri, 'followers')]
+        },
+        { meta: { webId: this.settings.actor.uri } }
+      );
 
       console.log('Match bot now follows actor', CONFIG.FOLLOWING);
     }
@@ -38,14 +42,18 @@ const MatchBotService = {
         const object = await this.broker.call('external-resource.getOne', { id: activity.object });
         if( object ) {
           const matchingFollowers = await this.getMatchingFollowers(object);
-          await this.broker.call('activitypub.outbox.post', {
-            collectionUri: urlJoin(this.settings.actor.uri, 'outbox'),
-            '@context': activity['@context'],
-            actor: this.settings.actor.uri,
-            to: [PUBLIC_URI, ...matchingFollowers],
-            type: ACTIVITY_TYPES.ANNOUNCE,
-            object: activity.object
-          });
+          await this.broker.call(
+            'activitypub.outbox.post',
+            {
+              collectionUri: urlJoin(this.settings.actor.uri, 'outbox'),
+              '@context': activity['@context'],
+              actor: this.settings.actor.uri,
+              to: [PUBLIC_URI, ...matchingFollowers],
+              type: ACTIVITY_TYPES.ANNOUNCE,
+              object: activity.object
+            },
+            { meta: { webId: this.settings.actor.uri } }
+          );
         } else {
           console.warn('Unable to fetch external resource', activity.object);
         }
