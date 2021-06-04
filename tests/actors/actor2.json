@@ -3,8 +3,8 @@
   "type": "Person",
   "pair:e-mail": "gabriel@test.com",
   "pair:hasTopic": [
-    "http://localhost:3000/themes/democratie",
-    "http://localhost:3000/themes/transport"
+    "https://dev.colibris.social/themes/democratie",
+    "https://dev.colibris.social/themes/transport"
   ],
   "location": {
     "type": "Place",

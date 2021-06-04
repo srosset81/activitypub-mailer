@@ -151,14 +151,18 @@ const FormService = {
 
           const actor = await ctx.call('activitypub.actor.awaitCreateComplete', { actorUri });
 
-          ctx.call('activitypub.outbox.post', {
-            collectionUri: actor.outbox,
-            '@context': 'https://www.w3.org/ns/activitystreams',
-            actor: actor.id,
-            type: ACTIVITY_TYPES.FOLLOW,
-            object: this.settings.matchBotUri,
-            to: [this.settings.matchBotUri, urlJoin(actor.id, 'followers'), PUBLIC_URI]
-          });
+          ctx.call(
+            'activitypub.outbox.post',
+            {
+              collectionUri: actor.outbox,
+              '@context': 'https://www.w3.org/ns/activitystreams',
+              actor: actor.id,
+              type: ACTIVITY_TYPES.FOLLOW,
+              object: this.settings.matchBotUri,
+              to: [this.settings.matchBotUri, urlJoin(actor.id, 'followers'), PUBLIC_URI]
+            },
+            { meta: { webId: actor.id } }
+          );
 
           // Do not wait for mail to be sent
           ctx.call('mailer.sendConfirmationMail', { actor });

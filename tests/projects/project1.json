@@ -9,10 +9,10 @@
       "semapps": "http://semapps.org/ns/core#"
     }
   ],
-  "id": "http://localhost:3000/activities/600f02a3ff3da341340d0856",
+  "id": "https://dev.colibris.social/activities/fake-activity-id-1",
   "type": "Announce",
-  "actor": "http://localhost:3000/services/lafabrique",
-  "object": "http://localhost:3000/projects/hameau-des-buis-ecole-la-ferme-des-enfants",
+  "actor": "https://dev.colibris.social/services/lafabrique",
+  "object": "https://dev.colibris.social/lafabrique/projects/hameau-des-buis-ecole-la-ferme-des-enfants",
   "published": "2021-01-25T17:40:51.961Z",
-  "to": "http://localhost:3000/services/lafabrique/followers"
+  "to": "https://dev.colibris.social/services/lafabrique/followers"
 }
