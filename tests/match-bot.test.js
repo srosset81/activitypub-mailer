@@ -87,7 +87,7 @@ describe('Test match-bot service', () => {
     expect(inbox.orderedItems[0]).toMatchObject({
       type: 'Announce',
       actor: matchBotUri,
-      object: "http://localhost:3000/projects/hameau-des-buis-ecole-la-ferme-des-enfants",
+      object: "https://dev.colibris.social/lafabrique/projects/hameau-des-buis-ecole-la-ferme-des-enfants",
       to: [actors[3].id, 'as:Public']
     });
   });
@@ -114,7 +114,7 @@ describe('Test match-bot service', () => {
     expect(outbox.orderedItems[0]).toMatchObject({
       type: 'Announce',
       actor: matchBotUri,
-      object: 'http://localhost:3000/projects/chateau-darvieu',
+      object: 'https://dev.colibris.social/lafabrique/projects/chateau-darvieu',
       to: [actors[3].id, actors[1].id, 'as:Public']
     });
   });
@@ -125,7 +125,7 @@ describe('Test match-bot service', () => {
     const result = await job.finished();
 
     expect(result).toMatchObject({
-      [actors[3].id]: ['http://localhost:3000/projects/hameau-des-buis-ecole-la-ferme-des-enfants', 'http://localhost:3000/projects/chateau-darvieu']
+      [actors[3].id]: ['https://dev.colibris.social/lafabrique/projects/hameau-des-buis-ecole-la-ferme-des-enfants', 'https://dev.colibris.social/lafabrique/projects/chateau-darvieu']
     });
   });
 
@@ -135,7 +135,7 @@ describe('Test match-bot service', () => {
     const result = await job.finished();
 
     expect(result).toMatchObject({
-      [actors[1].id]: ['http://localhost:3000/projects/chateau-darvieu']
+      [actors[1].id]: ['https://dev.colibris.social/lafabrique/projects/chateau-darvieu']
     });
   });
 
@@ -154,7 +154,7 @@ describe('Test match-bot service', () => {
   test('Send notification mail', async () => {
     const job = await broker.call('mailer.sendNotificationMail', {
       actorUri: actors[3].id,
-      objects: ['http://localhost:3000/projects/hameau-des-buis-ecole-la-ferme-des-enfants', 'http://localhost:3000/projects/chateau-darvieu']
+      objects: ['https://dev.colibris.social/lafabrique/projects/hameau-des-buis-ecole-la-ferme-des-enfants', 'https://dev.colibris.social/lafabrique/projects/chateau-darvieu']
     });
 
     const result = await job.finished();

@@ -9,10 +9,10 @@
       "semapps": "http://semapps.org/ns/core#"
     }
   ],
-  "id": "http://localhost:3000/activities/600efc04ff3da341340d06ed",
+  "id": "https://dev.colibris.social/activities/fake-activity-id-2",
   "type": "Announce",
-  "actor": "http://localhost:3000/services/lafabrique",
-  "object": "http://localhost:3000/projects/chateau-darvieu",
+  "actor": "https://dev.colibris.social/services/lafabrique",
+  "object": "https://dev.colibris.social/lafabrique/projects/chateau-darvieu",
   "published": "2021-01-25T17:12:36.925Z",
-  "to": "http://localhost:3000/services/lafabrique/followers"
+  "to": "https://dev.colibris.social/services/lafabrique/followers"
 }

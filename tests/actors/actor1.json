@@ -3,8 +3,8 @@
   "type": "Person",
   "pair:e-mail": "sebastien@test.com",
   "pair:hasTopic": [
-    "http://localhost:3000/themes/education",
-    "http://localhost:3000/themes/energie"
+    "https://dev.colibris.social/themes/education",
+    "https://dev.colibris.social/themes/energie"
   ],
   "location": {
     "type": "Place",

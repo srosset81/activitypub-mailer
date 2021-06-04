@@ -3,8 +3,8 @@
   "type": "Person",
   "pair:e-mail": "loic@test.com",
   "pair:hasTopic": [
-    "http://localhost:3000/themes/education",
-    "http://localhost:3000/themes/arts"
+    "https://dev.colibris.social/themes/education",
+    "https://dev.colibris.social/themes/arts"
   ],
   "semapps:mailFrequency": "daily"
 }
