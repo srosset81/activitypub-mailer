@@ -22,6 +22,7 @@
                     <div class="content">
                         <form accept-charset="UTF-8" action="/" id="user-profile-form" method="post">
                             <input name="id" type="hidden" value="{{ id }}" />
+                            <div class="messages error" id="migration-message">Cet outil de gestion des abonnements est en cours de migration. La recherche des adresses postales ne fonctionnent plus. Il devrait être à nouveau 100% opérationnel dans quelques jours.</div>
                             <div class="messages error" id="error-message" style="display: none"></div>
                             {{#ifCond message '===' 'updated' }}
                                 <div class="messages success" id="success-message">Vos informations ont bien été mises à jour.</div>
