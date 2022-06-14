@@ -1,3 +1,5 @@
+> **WARNING**: A new version of ActivityPub Mailer has been integrated into the [colibris.social](https://github.com/reconnexion/colibris.social) code base. This repository is now deprecated.
+
 [![SemApps](https://badgen.net/badge/Powered%20by/SemApps/28CDFB)](https://semapps.org)
 
 # ActivityPub Mailer
